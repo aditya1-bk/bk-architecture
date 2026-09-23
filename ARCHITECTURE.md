@@ -10,7 +10,11 @@
   - [2.5 External Integrations](#25-external-integrations)
   - [2.6 LeadSquared Integration](#26-leadsquared-integration)
   - [2.7 Sibro Integration](#27-sibro-integration)
-  - [2.8 Infrastructure & Deployment](#28-infrastructure--deployment)
+  - [2.8 Underwriting Platform](#28-underwriting-platform)
+  - [2.9 Agentic Workflow (RM Automation)](#29-agentic-workflow-rm-automation)
+  - [2.10 Reporting Engine V2](#210-reporting-engine-v2)
+  - [2.11 Document Signer](#211-document-signer)
+  - [2.12 Infrastructure & Deployment](#212-infrastructure--deployment)
 - [3. Usability Architecture](#3-usability-architecture)
   - [3.1 User Roles & Access](#31-user-roles--access)
   - [3.2 Customer Journey (BK Web)](#32-customer-journey-bk-web)
@@ -22,18 +26,39 @@
 
 ## 1. System Overview
 
-BimaKavach is a **B2B insurance aggregation platform** that enables businesses to compare, purchase, and manage commercial insurance policies from 25+ insurers across 20+ product categories. The platform consists of three user-facing applications backed by a microservices architecture.
+BimaKavach is a **B2B insurance aggregation platform** that enables businesses to compare, purchase, and manage commercial insurance policies from 25+ insurers across 20+ product categories.
 
 ```mermaid
 graph TB
     subgraph "User-Facing Applications"
         WEB["BK Web V2.0<br/><i>Customer Portal</i><br/>Next.js 14 | Port 3000"]
+        POS_APP["POS Mobile App<br/><i>Agent App</i><br/>React Native + Expo"]
+        DOCSIGN["Document Signer<br/><i>PDF Signing Component</i><br/>Next.js 14"]
+    end
+
+    subgraph "Admin Dashboards"
         ADMIN["bi-admin V2<br/><i>Internal Admin Panel</i><br/>Next.js 13 | Port 3000"]
-        subgraph "POS Platform"
-            POS_APP["POS Mobile App<br/><i>Agent App</i><br/>React Native + Expo"]
-            POS_ADMIN["POS Admin<br/><i>POS Admin Panel</i><br/>Next.js 16 | Port 3012"]
-            POS_REPORT["POS Reporting<br/><i>Analytics Dashboard</i><br/>React | CloudFront"]
-        end
+        POS_ADMIN["POS Admin<br/><i>POS Admin Panel</i><br/>Next.js 16 | Port 3012"]
+        POS_REPORT["POS Reporting<br/><i>Analytics Dashboard</i><br/>React | CloudFront"]
+    end
+
+    subgraph "Underwriting Platform"
+        UW_ENGINE["UW Engine (Multi-Product)<br/><i>Scoring & Decision</i><br/>NestJS 11 | Port 4000"]
+        UW_DASH["UW Dashboard (Multi-Product)<br/><i>Underwriting UI</i><br/>Next.js 16 | Port 4001"]
+        UW_DNO_ENGINE["UW Decision Engine (D&O)<br/><i>D&O Scoring & Policy Analytics</i><br/>NestJS 11 | Port 3000"]
+        UW_DNO_DASH["UW Dashboard (D&O)<br/><i>D&O Underwriting UI</i><br/>Next.js 16 | Port 3001"]
+    end
+
+    subgraph "RM Automation"
+        AGENTIC_BE["Agentic Workflow Backend<br/><i>Case Management + AI</i><br/>NestJS 10 | Port 3001"]
+        AGENTIC_FE["Agentic Workflow Frontend<br/><i>RM Dashboard</i><br/>Next.js 14 | Port 3000"]
+    end
+
+    subgraph "Reporting & Analytics"
+        REPORT_ENGINE["Reporting Engine V2<br/><i>ETL + Sync</i><br/>Express.js | Port 3000"]
+        METABASE["Metabase<br/><i>BI Dashboards</i><br/>Port 3001"]
+        CHATBOT["NL→SQL Chatbot<br/><i>Natural Language Queries</i>"]
+        NGINX_REPORT["Nginx Proxy<br/>Port 3013"]
     end
 
     subgraph "Backend Services"
@@ -66,6 +91,26 @@ graph TB
     PROPOSAL -->|TCP| EMAIL
     PROPOSAL -->|TCP| QUESTION
     EMAIL -->|TCP| COMMON
+
+    UW_DASH -->|HTTPS + JWT| UW_ENGINE
+    UW_DNO_DASH -->|HTTPS + JWT| UW_DNO_ENGINE
+    UW_ENGINE -->|HTTPS| PROBE_EXT["Probe42 API"]
+    UW_ENGINE -->|HTTPS| CLAUDE_EXT["Claude API"]
+    UW_DNO_ENGINE -->|HTTPS| PROBE_EXT
+    UW_DNO_ENGINE -->|HTTPS| CLAUDE_EXT
+
+    AGENTIC_FE -->|HTTPS + NextAuth| AGENTIC_BE
+    AGENTIC_BE -->|HTTPS| AISENSY_EXT["AiSensy WhatsApp"]
+    AGENTIC_BE -->|HTTPS| SG_EXT["SendGrid"]
+    AGENTIC_BE -->|HTTPS| CLAUDE_EXT
+
+    REPORT_ENGINE -->|HTTPS| LSQ_EXT["LeadSquared API"]
+    REPORT_ENGINE -->|HTTPS| SIBRO_EXT["Sibro API"]
+    REPORT_ENGINE -->|SQL| SOURCE_DB[(Source PostgreSQL)]
+    NGINX_REPORT --> METABASE
+    NGINX_REPORT --> CHATBOT
+    METABASE --> REPORT_DB[(Reporting PostgreSQL)]
+    REPORT_ENGINE --> REPORT_DB
 ```
 
 ---
@@ -152,6 +197,14 @@ graph LR
 | **POS Admin** | `pos/pos-admin` | Next.js 16, React 19, NextAuth | 3012 | POS admin dashboard |
 | **POS Mobile App** | `pos/pos-app` | React Native 0.81, Expo 54 | -- | Agent mobile application |
 | **POS Reporting** | `pos/pos-reporting` | React 19, Google Sheets API | -- | Analytics & reporting (CloudFront) |
+| **UW Engine (Multi-Product)** | `bk-underwriting/engine` | NestJS 11, TypeScript, TypeORM | 4000 | Multi-product underwriting scoring engine (D&O, E&O, Cyber, CGL, WC, Crime) |
+| **UW Dashboard (Multi-Product)** | `bk-underwriting/dashboard` | Next.js 16, React 19, shadcn/ui, Tailwind | 4001 | Underwriting dashboard for multi-product scoring |
+| **UW Decision Engine (D&O)** | `bk-underwriting-and-decision-engine` | NestJS 11, TypeScript, TypeORM | 3000 | D&O-focused scoring, policy extraction & QC via Claude AI |
+| **UW Dashboard (D&O)** | `bk-underwriting-dashboard` | Next.js 16, React 19, shadcn/ui, Tailwind | 3001 | D&O underwriting dashboard with risk scoring, rater comparison, QC reports |
+| **Agentic Workflow Backend** | `agentic-workflow` | NestJS 10, TypeScript, Prisma, BullMQ | 3001 | RM automation — case management, AI classification & drafts, WhatsApp/email |
+| **Agentic Workflow Frontend** | `agentic-workflow/frontend` | Next.js 14, React 18, NextAuth, TanStack Query | 3000 | RM dashboard for case management |
+| **Reporting Engine V2** | `reporting-engine-v2` | Express.js, TypeScript, Prisma | 3000 | ETL pipeline — syncs LSQ, Sibro, source DB into reporting DB + Metabase |
+| **Document Signer** | `document-signer` | Next.js 14, TypeScript, pdf-lib, fabric.js | 3000 | Client-side PDF signing component (embeddable, no backend) |
 
 ### 2.3 Inter-Service Communication
 
@@ -163,7 +216,6 @@ graph TD
         GW_AUTH["Auth & Guards<br/>JWT, HMAC, Roles"]
         GW_ROUTES["60+ Controllers<br/>REST → TCP routing"]
         GW_CRON["Cron Jobs<br/>Daily 4:30 AM IST"]
-        GW_WS["WebSocket<br/>Real-time"]
     end
 
     subgraph "Common :3006"
@@ -303,7 +355,53 @@ erDiagram
         table PosEndorsement
         table PosNotification
     }
+
+    UNDERWRITING_SERVICE {
+        table scoring_results
+        table extracted_policies
+        table insurer_raters
+        table qc_results
+        table probe_response_cache
+        table company_overrides
+        table users_uw
+    }
+
+    AGENTIC_WORKFLOW {
+        table users_agentic
+        table refresh_tokens
+        table parties
+        table insurers_agentic
+        table cases
+        table case_parties
+        table messages
+        table attachments
+        table events
+        table message_classifications
+        table draft_suggestions
+        table document_requirements
+        table case_documents
+        table case_submissions
+        table case_quotes
+        table eval_cases
+        table eval_runs
+    }
+
+    REPORTING_ENGINE {
+        table sync_logs
+        table leadsquared_leads
+        table leadsquared_activities
+        table leadsquared_opportunities
+        table leadsquared_custom_objects
+        table sibro_business_statements
+        table lead_stage_history
+        table lead_owner_history
+        table lead_policy_mappings
+        table bk_mirror_tables
+        table reporting_view_columns
+    }
 ```
+
+> **Note:** The core platform, underwriting, and agentic workflow services share the same PostgreSQL RDS instance (`bimakavach_dev`) but manage separate table sets. The reporting engine uses its own dedicated PostgreSQL instance (`reporting_db`).
 
 ### 2.5 External Integrations
 
@@ -348,12 +446,23 @@ graph TB
         GSHEETS["Google Sheets<br/>POS Reporting"]
     end
 
+    subgraph "AI / LLM"
+        CLAUDE["Anthropic Claude API<br/>Policy extraction, scoring,<br/>classification, drafts"]
+    end
+
+    subgraph "Data Enrichment"
+        PROBE42["Probe42<br/>Company data (MCA, financials)"]
+    end
+
     GW_NODE["API Gateway"] --> FG & CHOLA_PAY & MAGMA & LSQ & PROBE_EXT & MSG91_EXT
     Q_NODE["Question Service"] --> SIBRO_EXT & GDOCAI & TESSERACT & CASHFREE
     E_NODE["Email Service"] --> SG
     P_NODE["Proposal Service"] --> ANVIL_EXT
     POS_NODE["POS Backend"] --> FIREBASE_EXT & AISENSY & MSG91_EXT
     WEB_NODE["BK Web"] --> GTM
+    UW_NODE["Underwriting Engines"] --> CLAUDE & PROBE42
+    AGENTIC_NODE["Agentic Workflow"] --> CLAUDE & AISENSY & SG
+    REPORT_NODE["Reporting Engine V2"] --> LSQ & SIBRO_EXT
 ```
 
 | Integration | Service | Purpose |
@@ -370,7 +479,9 @@ graph TB
 | **Cashfree** | Question Service | Payment gateway |
 | **MSG91** | API Gateway, POS | SMS OTP delivery |
 | **Firebase FCM** | POS Backend | Mobile push notifications |
-| **AiSensy** | POS Backend | WhatsApp message automation |
+| **AiSensy** | POS Backend, Agentic Workflow | WhatsApp message automation |
+| **Anthropic Claude API** | UW Engine, UW D&O Engine, Agentic Workflow | Policy PDF extraction, risk analysis, AI suggestions, message classification, draft generation |
+| **Probe42** | UW Engine, UW D&O Engine | Company data enrichment (MCA filings, financials, directors, legal history) |
 | **AWS S3** | Multiple | Document & file storage (ap-south-1) |
 | **AWS CloudWatch** | Multiple | Centralized logging |
 | **Google Sheets** | POS Reporting | Analytics data source |
@@ -604,7 +715,364 @@ flowchart TD
 
 ---
 
-### 2.8 Infrastructure & Deployment
+### 2.8 Underwriting Platform
+
+The underwriting platform consists of two independent deployments — a **multi-product engine** (`bk-underwriting`) and a **D&O-specific engine** (`bk-underwriting-and-decision-engine`). Both share the same PostgreSQL database (BimaKavach RDS) but operate as standalone services with their own dashboards.
+
+```mermaid
+graph TB
+    subgraph "Multi-Product Underwriting (bk-underwriting)"
+        UW_DASH["Dashboard<br/>Next.js 16 | :4001"]
+        UW_ENGINE["Engine<br/>NestJS 11 | :4000"]
+
+        subgraph "Product Modules"
+            DNO["D&O"]
+            ENO["E&O"]
+            CYBER["Cyber"]
+            CGL["CGL"]
+            WC["WC"]
+            CRIME["Crime"]
+        end
+    end
+
+    subgraph "D&O Decision Engine (bk-underwriting-and-decision-engine)"
+        DNO_DASH["Dashboard<br/>Next.js 16 | :3001"]
+        DNO_ENGINE["Engine<br/>NestJS 11 | :3000"]
+
+        subgraph "D&O Features"
+            SCORING["Risk Scoring"]
+            EXTRACT["Policy Extraction"]
+            QC["QC Reports"]
+            RATERS["Rater Management"]
+            RECOMMEND["Recommendations"]
+            TRENDS["Trends & Analytics"]
+        end
+    end
+
+    subgraph "Data Enrichment Sources"
+        PROBE["Probe42<br/>(MCA/Corporate)"]
+        SANDBOX["Sandbox.co.in<br/>(GST) — Placeholder"]
+        CIBIL["TransUnion CIBIL<br/>(Credit) — Placeholder"]
+        VAKEEL["Vakeel360<br/>(Litigation) — Placeholder"]
+        SETU["Setu AA<br/>(Bank Data) — Placeholder"]
+    end
+
+    subgraph "AI Layer"
+        CLAUDE["Claude API<br/>(claude-sonnet-4-6)"]
+    end
+
+    UW_DASH -->|"HTTPS + JWT"| UW_ENGINE
+    UW_ENGINE --> DNO & ENO & CYBER & CGL & WC & CRIME
+    UW_ENGINE -->|"Company enrichment"| PROBE
+    UW_ENGINE -->|"PDF extraction"| CLAUDE
+
+    DNO_DASH -->|"HTTPS + JWT"| DNO_ENGINE
+    DNO_ENGINE --> SCORING & EXTRACT & QC & RATERS & RECOMMEND & TRENDS
+    DNO_ENGINE -->|"Company enrichment"| PROBE
+    DNO_ENGINE -->|"Policy extraction<br/>+ AI suggestions"| CLAUDE
+
+    UW_ENGINE -.->|"Future"| SANDBOX & CIBIL & VAKEEL & SETU
+    DNO_ENGINE -.->|"Future"| SANDBOX & CIBIL & VAKEEL & SETU
+
+    UW_ENGINE & DNO_ENGINE --> PG[(PostgreSQL RDS)]
+```
+
+#### Underwriting Scoring Flow
+
+```mermaid
+flowchart TD
+    INPUT["Company Identifier<br/>(CIN / GSTIN / PAN)"]
+    ENRICH["Data Enrichment<br/><i>Parallel API calls</i>"]
+    PROBE_CALL["Probe42 API<br/><i>Financials, directors,<br/>MCA filings, legal</i>"]
+    CACHE{"Cache<br/>available?"}
+    DB_CACHE["DB Cache<br/>(probe_response_cache)"]
+    API_CALL["Paid API Call"]
+    SCORE["Scoring Engine<br/><i>Weighted parameters (0-100)</i>"]
+    RED_FLAGS["Red Flag Detection"]
+    DECISION{"Decision"}
+    APPROVE["AUTO_APPROVE"]
+    REFER["REFER_TO_UNDERWRITER"]
+    DECLINE["DECLINE"]
+    SAVE["Save to scoring_results"]
+    CROSS_SELL["Cross-Sell<br/>Recommendations"]
+
+    INPUT --> ENRICH
+    ENRICH --> CACHE
+    CACHE -->|"Hit (< 90 days)"| DB_CACHE --> SCORE
+    CACHE -->|"Miss"| PROBE_CALL --> API_CALL --> SCORE
+    SCORE --> RED_FLAGS
+    RED_FLAGS --> DECISION
+    DECISION -->|"Score ≥ threshold"| APPROVE
+    DECISION -->|"Score in middle range"| REFER
+    DECISION -->|"Score below min<br/>or critical red flags"| DECLINE
+    APPROVE & REFER & DECLINE --> SAVE
+    SAVE --> CROSS_SELL
+
+    style APPROVE fill:#c8e6c9
+    style REFER fill:#fff3e0
+    style DECLINE fill:#ffcdd2
+```
+
+#### Underwriting Database Tables
+
+```mermaid
+erDiagram
+    UNDERWRITING_SERVICES {
+        table scoring_results
+        table extracted_policies
+        table insurer_raters
+        table qc_results
+        table probe_response_cache
+        table company_overrides
+        table users
+    }
+```
+
+| Table | Engine | Purpose |
+|-------|--------|---------|
+| `scoring_results` | Both | Audit trail — composite score, decision, parameters, red flags, cross-sell |
+| `extracted_policies` | Both | Claude-extracted policy data (coverages, limits, deductibles, exclusions) |
+| `insurer_raters` | Both | Uploaded insurer rate cards (coverages, premium bands, occupancies) |
+| `qc_results` | Multi-product | QC report results (standard & historical comparison, peer alignment) |
+| `probe_response_cache` | Multi-product | Cached Probe42 API responses (CIN/PAN lookup, 90-day TTL) |
+| `company_overrides` | Multi-product | Admin-applied scoring overrides for specific companies |
+| `users` | Both | System users (admin, underwriter, viewer roles) |
+
+---
+
+### 2.9 Agentic Workflow (RM Automation)
+
+The agentic workflow platform automates Relationship Manager (RM) operations — case management, multi-channel communication (WhatsApp + Email), and AI-powered message classification and draft suggestions.
+
+```mermaid
+graph TB
+    subgraph "Frontend"
+        FE["RM Dashboard<br/>Next.js 14 | :3000<br/>NextAuth + TanStack Query"]
+    end
+
+    subgraph "Backend (NestJS 10 | :3001)"
+        AUTH["Auth Module<br/><i>JWT + Refresh Tokens</i>"]
+        CASES["Cases Module<br/><i>CRUD, Routing, Stage Guards</i>"]
+        MSGS["Messages Module<br/><i>Inbox, Timeline, Read Tracking</i>"]
+        ATTACH["Attachments Module<br/><i>S3 Upload/Download</i>"]
+        EVENTS["Events Module<br/><i>Append-only Audit Log</i>"]
+        WEBHOOKS["Webhooks Module<br/><i>WhatsApp + Email Receivers</i>"]
+        DOCS["Documents Module<br/><i>Requirements + Case Docs</i>"]
+        SUBMISSIONS["Submissions Module<br/><i>Per-insurer Tracking</i>"]
+        QUOTES["Quotes Module<br/><i>Versioning + Selection</i>"]
+        ADMIN_OPS["Admin Ops<br/><i>Queue Health, Integrity</i>"]
+    end
+
+    subgraph "AI Layer"
+        CLASSIFY["Classification<br/><i>15 categories</i>"]
+        DRAFTS["Draft Suggestions<br/><i>2-3 candidates per message</i>"]
+        EVAL["Eval Harness<br/><i>Prompt validation</i>"]
+    end
+
+    subgraph "Job Queue (BullMQ + Redis 7)"
+        Q_INGEST["message-ingestion"]
+        Q_CLASS["classification"]
+        Q_DRAFT["draft-suggestion"]
+        Q_ATTACH["attachment-download"]
+        Q_OUTBOUND["outbound-message"]
+        Q_STATUS["whatsapp-status-update"]
+        Q_CRON["Cron Jobs<br/><i>Orphan cleanup (03:00 UTC)<br/>Quote integrity (03:30 UTC)</i>"]
+    end
+
+    subgraph "External Services"
+        AISENSY["AiSensy<br/>(WhatsApp BSP)"]
+        SENDGRID["SendGrid<br/>(Email)"]
+        CLAUDE["Claude API<br/>(Sonnet 4.5)"]
+        S3["AWS S3 / MinIO<br/>(Attachments)"]
+    end
+
+    FE -->|"HTTPS + NextAuth"| AUTH
+    AUTH --> CASES & MSGS & ATTACH & DOCS & SUBMISSIONS & QUOTES & ADMIN_OPS
+
+    WEBHOOKS -->|"AiSensy HMAC"| Q_INGEST
+    WEBHOOKS -->|"SendGrid Token"| Q_INGEST
+    Q_INGEST --> MSGS
+    Q_INGEST --> Q_CLASS
+    Q_CLASS --> CLASSIFY
+    CLASSIFY -->|"Eligible + confidence ≥ 0.75"| Q_DRAFT
+    Q_DRAFT --> DRAFTS
+    CLASSIFY & DRAFTS --> CLAUDE
+
+    Q_OUTBOUND --> AISENSY & SENDGRID
+    Q_ATTACH --> S3
+    Q_STATUS --> MSGS
+
+    CASES & MSGS & ATTACH & EVENTS --> PG[(PostgreSQL 16)]
+```
+
+#### Agentic Workflow — Message Ingestion Pipeline
+
+```mermaid
+flowchart TD
+    WH_WA["WhatsApp Webhook<br/>(AiSensy HMAC verified)"]
+    WH_EMAIL["Email Webhook<br/>(SendGrid token verified)"]
+    QUEUE["BullMQ: message-ingestion"]
+    PARSE["Parse & Normalize<br/><i>Extract fields, phone/email</i>"]
+    PARTY["Party Resolution<br/><i>Find or create party, dedup</i>"]
+    ROUTE{"Routing Cascade"}
+    TAG["Email subject tag<br/>[CASE-N]"]
+    THREAD["Email threading<br/>(In-Reply-To)"]
+    PHONE["WhatsApp from-number<br/>match"]
+    INBOX["Inbox<br/>(case_id = NULL)"]
+    ASSIGN["Assign to Case"]
+    CLASS_Q["BullMQ: classification"]
+    CLAUDE_CLASS["Claude Sonnet 4.5<br/><i>Classify into 15 categories</i>"]
+    ELIGIBLE{"Category eligible<br/>& confidence ≥ 0.75?"}
+    DRAFT_Q["BullMQ: draft-suggestion"]
+    CLAUDE_DRAFT["Claude Sonnet 4.5<br/><i>Generate 2-3 draft replies</i>"]
+    RM_REVIEW["RM Reviews Drafts<br/><i>Use / Edit / Dismiss</i>"]
+
+    WH_WA & WH_EMAIL --> QUEUE
+    QUEUE --> PARSE --> PARTY --> ROUTE
+    ROUTE -->|"Match found"| ASSIGN
+    ROUTE -->|"No match"| INBOX
+    ASSIGN & INBOX --> CLASS_Q
+    CLASS_Q --> CLAUDE_CLASS --> ELIGIBLE
+    ELIGIBLE -->|"Yes"| DRAFT_Q --> CLAUDE_DRAFT --> RM_REVIEW
+    ELIGIBLE -->|"No"| SKIP["No draft generated"]
+
+    style INBOX fill:#fff3e0
+    style RM_REVIEW fill:#c8e6c9
+```
+
+#### Agentic Workflow — Case Lifecycle
+
+```
+INTAKE → (receive messages, documents, submissions)
+       → (receive quotes, compare, select)
+       → CLOSED_WON  (requires selected quote + final premium + policy number)
+       → CLOSED_LOST  (requires reason)
+       → CLOSED_ABANDONED
+       → REOPEN (nulls outcome, preserves quote selection)
+```
+
+#### Agentic Workflow Database Tables
+
+| Table | Purpose |
+|-------|---------|
+| `users` | RM and Admin users (JWT auth, role-based access) |
+| `refresh_tokens` | JWT refresh token rotation (bcrypt hashed) |
+| `parties` | Customers, insurer contacts, RM shadows (dedup via linkedPartyId) |
+| `insurers` | Insurer registry (name, code, default emails) |
+| `cases` | Insurance cases (stage, product type, outcome, assigned RM) |
+| `case_parties` | Many-to-many: cases ↔ parties with roles |
+| `messages` | WhatsApp + email messages (inbound/outbound, status tracking) |
+| `attachments` | File metadata + S3 keys (checksumSha256 for integrity) |
+| `events` | Append-only audit log (every case action recorded) |
+| `message_classifications` | AI classification results (category, confidence, rationale) |
+| `draft_suggestions` | AI-generated reply drafts (candidates, RM outcome tracking) |
+| `document_requirements` | Admin-managed per-product document catalog |
+| `case_documents` | Per-case document state (REQUIRED/RECEIVED/WAIVED/REJECTED) |
+| `case_submissions` | Per-insurer submission tracking (PENDING/SUBMITTED/ACKNOWLEDGED) |
+| `case_quotes` | Quote versioning with auto-supersession and selection |
+| `eval_cases` | Held-out test cases for AI prompt validation |
+| `eval_runs` | Eval execution results (pass/fail, score) |
+
+---
+
+### 2.10 Reporting Engine V2
+
+The reporting engine is an ETL pipeline that syncs data from LeadSquared, Sibro, and the source PostgreSQL database into a dedicated reporting database, powering Metabase dashboards and a natural-language SQL chatbot.
+
+```mermaid
+graph TB
+    subgraph "Data Sources"
+        LSQ_API["LeadSquared API<br/><i>Leads, Activities,<br/>Opportunities, Custom Objects</i>"]
+        SIBRO_API["Sibro API<br/><i>Business Statements,<br/>Policies, Commissions</i>"]
+        SOURCE_DB["Source PostgreSQL<br/>(BimaKavach RDS)<br/><i>All tables mirrored</i>"]
+    end
+
+    subgraph "Reporting Engine (Express.js | :3000)"
+        SYNC_MGR["Sync Manager<br/><i>Mutex locks, orchestration</i>"]
+        LSQ_SVC["LeadSquared Service<br/><i>Field discovery, pagination</i>"]
+        SIBRO_SVC["Sibro Service<br/><i>Date-range queries</i>"]
+        PG_SYNC["PostgreSQL Sync<br/><i>Auto-discover & mirror tables</i>"]
+        VIEW_REFRESH["View Refresher<br/><i>Dynamic JSON→columns views</i>"]
+        CRON["Cron Scheduler<br/><i>LSQ: hourly | PG: hourly<br/>Sibro: 6h | Activities: daily 3AM</i>"]
+        API["REST API<br/><i>Manual sync triggers,<br/>status, health</i>"]
+    end
+
+    subgraph "Reporting Database (PostgreSQL 15)"
+        LEADS["leadsquared_leads"]
+        ACTIVITIES["leadsquared_activities"]
+        OPPS["leadsquared_opportunities"]
+        CUSTOM["leadsquared_custom_objects"]
+        SIBRO_STMT["sibro_business_statements"]
+        MIRROR["bk_* mirror tables<br/><i>Auto-replicated from source</i>"]
+        SYNC_LOGS["sync_logs<br/><i>Audit trail</i>"]
+        VIEWS["Dynamic Views<br/><i>Flattened JSON→columns</i>"]
+    end
+
+    subgraph "BI Layer"
+        METABASE["Metabase<br/>(:3001)"]
+        CHATBOT["NL→SQL Chatbot<br/><i>LLM-powered queries</i>"]
+        NGINX["Nginx Proxy<br/>(:3013)"]
+    end
+
+    LSQ_API --> LSQ_SVC
+    SIBRO_API --> SIBRO_SVC
+    SOURCE_DB --> PG_SYNC
+
+    LSQ_SVC --> LEADS & ACTIVITIES & OPPS & CUSTOM
+    SIBRO_SVC --> SIBRO_STMT
+    PG_SYNC --> MIRROR
+    SYNC_MGR --> SYNC_LOGS
+    VIEW_REFRESH --> VIEWS
+
+    LEADS & SIBRO_STMT & MIRROR & VIEWS --> METABASE
+    METABASE --> CHATBOT
+    NGINX -->|"/"| METABASE
+    NGINX -->|"/chat/"| CHATBOT
+```
+
+#### Reporting Engine — Sync Schedule
+
+| Source | Frequency | Strategy |
+|--------|-----------|----------|
+| LeadSquared Leads | Hourly (minute 0) | Incremental (modified since last sync) |
+| PostgreSQL Mirror | Hourly (minute 30) | Incremental (table-level timestamps) |
+| Sibro Statements | Every 6 hours (minute 0) | Date-range query |
+| LSQ Opportunities | Every 6 hours (minute 15) | Incremental |
+| LSQ Activities | Daily at 3 AM IST | Incremental |
+
+#### Reporting Engine — Docker Services
+
+| Service | Image | Port | Purpose |
+|---------|-------|------|---------|
+| `reporting-engine` | Node.js 20 (multi-stage) | 3010→3000 | ETL API + sync workers |
+| `postgres` | PostgreSQL 15-alpine | 5434→5432 | Reporting database |
+| `metabase` | metabase:latest | 3001 | BI dashboard |
+| `chatbot` | Node.js (custom) | -- | NL→SQL interface (Metabase-authenticated) |
+| `nginx` | nginx:alpine | 3013→80 | Reverse proxy for Metabase + chatbot |
+
+---
+
+### 2.11 Document Signer
+
+A **client-side PDF signing component** built as an embeddable Next.js module. All processing happens in the browser — no backend, no database, no external APIs.
+
+**Key capabilities:**
+- Upload PDF documents or load from URL
+- Create signatures via Draw (freehand), Type (text fonts), or Upload (image)
+- Drag-and-drop signature placement on PDF pages with resize
+- Download signed PDF with embedded signatures
+
+**Tech:** Next.js 14, TypeScript, pdf-lib (PDF manipulation), fabric.js (canvas drawing), react-pdf (rendering)
+
+**Usage:** Designed to be embedded in other Next.js apps:
+```tsx
+import { DocumentSigner } from '@/components/document-signer';
+<DocumentSigner height="100vh" pdfUrl="https://example.com/file.pdf" />
+```
+
+---
+
+### 2.12 Infrastructure & Deployment
 
 ```mermaid
 graph TB
@@ -622,29 +1090,68 @@ graph TB
             D_PROPOSAL["Proposal Form<br/>:3009<br/>Node 18-slim"]
             D_POS_API["POS API<br/>:3011<br/>Node 22-slim"]
         end
+        subgraph "Underwriting Containers"
+            D_UW_ENGINE["UW Engine<br/>:4000<br/>Node 20-alpine"]
+            D_UW_DASH["UW Dashboard<br/>:4001<br/>Node 20-alpine"]
+            D_DNO_ENGINE["UW D&O Engine<br/>:3000<br/>Node 20-alpine"]
+            D_DNO_DASH["UW D&O Dashboard<br/>:3001<br/>Node 20-alpine"]
+        end
+        subgraph "Agentic Workflow Containers"
+            D_AGENTIC_BE["Agentic Backend<br/>:3001<br/>Node 20-alpine"]
+            D_AGENTIC_FE["Agentic Frontend<br/>:3000<br/>Node 20"]
+            D_REDIS["Redis 7<br/>:6379"]
+            D_MINIO["MinIO (S3)<br/>:9000"]
+        end
+        subgraph "Reporting Containers"
+            D_REPORT["Reporting Engine<br/>:3010→3000<br/>Node 20"]
+            D_REPORT_PG["Reporting PG 15<br/>:5434→5432"]
+            D_METABASE["Metabase<br/>:3001"]
+            D_CHATBOT["NL→SQL Chatbot"]
+            D_NGINX["Nginx Proxy<br/>:3013"]
+        end
     end
 
     subgraph "AWS (ap-south-1)"
         RDS_PG[(RDS PostgreSQL)]
-        S3_BUCK["S3 Buckets<br/>bimakavach-v2<br/>bimakavach-policies<br/>bk-pos-policies"]
+        S3_BUCK["S3 Buckets<br/>bimakavach-v2<br/>bimakavach-policies<br/>bk-pos-policies<br/>bimakavach-attachments"]
         CW_LOGS["CloudWatch Logs"]
         CF_CDN["CloudFront CDN"]
     end
 
+    subgraph "AI Services"
+        CLAUDE_API["Anthropic Claude API"]
+    end
+
     D_GW & D_COMMON & D_QUESTION & D_EMAIL & D_PROPOSAL & D_POS_API --> RDS_PG
+    D_UW_ENGINE & D_DNO_ENGINE --> RDS_PG
+    D_AGENTIC_BE --> RDS_PG
+    D_REPORT --> RDS_PG
+
     D_GW & D_QUESTION & D_EMAIL & D_PROPOSAL & D_POS_API --> S3_BUCK
+    D_AGENTIC_BE --> S3_BUCK
     D_GW --> CW_LOGS
+
+    D_UW_ENGINE & D_DNO_ENGINE --> CLAUDE_API
+    D_AGENTIC_BE --> CLAUDE_API
+
+    D_AGENTIC_BE --> D_REDIS
+    D_REPORT --> D_REPORT_PG
+    D_METABASE --> D_REPORT_PG
+    D_NGINX --> D_METABASE & D_CHATBOT
 ```
 
 **Tech Stack Summary:**
-- **Runtime:** Node.js 18 (main platform), Node.js 22 (POS)
-- **Backend Framework:** NestJS 10-11
+- **Runtime:** Node.js 18 (core platform), Node.js 20 (underwriting, agentic, reporting), Node.js 22 (POS)
+- **Backend Frameworks:** NestJS 10-11 (microservices + underwriting + agentic), Express.js (reporting engine)
 - **Frontend Frameworks:** Next.js 13-16, React Native/Expo 54
-- **Database:** PostgreSQL via TypeORM (synchronize mode)
-- **Transport:** TCP (NestJS Microservices) between backend services
-- **Auth:** JWT + HMAC-SHA256 signing + OTP (MSG91)
+- **Database:** PostgreSQL via TypeORM (core platform, underwriting) and Prisma (agentic workflow, reporting engine)
+- **Transport:** TCP (NestJS Microservices) between core backend services; REST between independent platforms
+- **Message Queue:** BullMQ + Redis 7 (agentic workflow); node-cron (reporting engine)
+- **AI/LLM:** Anthropic Claude API — Sonnet 4.5 (agentic classification/drafts), Sonnet 4.6 (underwriting policy extraction/scoring)
+- **Auth:** JWT + HMAC-SHA256 signing + OTP (MSG91) for core; JWT + refresh tokens (underwriting, agentic); NextAuth (agentic frontend)
 - **Containerization:** Docker + Docker Compose, shared `local` network
 - **Cloud:** AWS (RDS, S3, CloudWatch, CloudFront), Google Cloud (Document AI, Storage)
+- **BI/Analytics:** Metabase + NL→SQL chatbot (reporting engine v2)
 - **Region:** ap-south-1 (Mumbai)
 
 ---
@@ -827,6 +1334,10 @@ graph TB
         F_POS_AGENT["POS Agent<br/>Operations"]
         F_NOTIF["Push & WhatsApp<br/>Notifications"]
         F_ANALYTICS["Reporting &<br/>Analytics"]
+        F_UNDERWRITING["Underwriting &<br/>Risk Scoring"]
+        F_RM_AUTO["RM Automation<br/>& Case Mgmt"]
+        F_DOCSIGN["Document<br/>Signing"]
+        F_BI["BI Dashboards<br/>& ETL"]
     end
 
     subgraph "Services"
@@ -836,6 +1347,9 @@ graph TB
         S_EMAIL["Email"]
         S_PROPOSAL["Proposal Form"]
         S_POS["POS Backend"]
+        S_UW["Underwriting<br/>Engine(s)"]
+        S_AGENTIC["Agentic<br/>Workflow"]
+        S_REPORT["Reporting<br/>Engine V2"]
     end
 
     F_QUOTE --> S_QUESTION & S_COMMON
@@ -848,8 +1362,12 @@ graph TB
     F_MASTER --> S_COMMON
     F_OCR --> S_QUESTION
     F_POS_AGENT --> S_POS & S_COMMON & S_QUESTION
-    F_NOTIF --> S_POS
-    F_ANALYTICS --> S_POS
+    F_NOTIF --> S_POS & S_AGENTIC
+    F_ANALYTICS --> S_POS & S_REPORT
+    F_UNDERWRITING --> S_UW
+    F_RM_AUTO --> S_AGENTIC
+    F_DOCSIGN --> S_PROPOSAL
+    F_BI --> S_REPORT
 ```
 
 | Feature | Primary Service | Supporting Services | External Dependencies |
@@ -866,7 +1384,10 @@ graph TB
 | **Company Verification** | Gateway :3005 | -- | Probe API |
 | **POS Operations** | POS :3011 | Common :3006, Question :3007 | Firebase, AiSensy, MSG91 |
 | **POS Analytics** | POS Reporting | -- | Google Sheets |
+| **Underwriting (Multi-Product)** | UW Engine :4000 | UW Dashboard :4001 | Probe42, Claude API |
+| **Underwriting (D&O)** | UW D&O Engine :3000 | UW D&O Dashboard :3001 | Probe42, Claude API |
+| **RM Automation / Cases** | Agentic Workflow :3001 | Agentic Frontend :3000 | AiSensy, SendGrid, Claude API |
+| **BI Dashboards / ETL** | Reporting Engine V2 :3000 | Metabase :3001 | LeadSquared API, Sibro API, Source DB |
+| **Document Signing** | Document Signer (client-side) | -- | -- |
 
 ---
-
-*Generated on 2026-03-31 from codebase analysis.*

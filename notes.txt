@@ -1,0 +1,265 @@
+Daily Cron Jobs (API Gateway :3005)
+
+  1. Stale Lead Reminders (45 days) -- Finds leads in LeadSquared that were created but never converted to a policy within 45 days. Creates a reminder activity in
+  LeadSquared so the sales team follows up or closes them.
+  2. Policy Expiry Reminders -- Sends automated emails at multiple intervals before a policy expires: 60 days, 21 days, 14 days, 7 days, and 1 day before expiry. These
+  go to the client (and possibly the assigned sales/CS person) via the Email Service → SendGrid.
+  3. Proposal Form Reminders -- Checks for proposal forms that were initiated but never completed (status stuck at "not-started" or "started"). Sends reminder emails to
+  the client to complete their proposal form, since an incomplete proposal blocks policy issuance.
+  4. User Activity Monitoring -- Tracks user engagement patterns, likely flagging inactive users or triggering re-engagement emails.
+
+  How the flow works
+
+  Cron triggers at 4:30 AM IST
+      → API Gateway queries the database for matching conditions
+      → For LeadSquared items: calls LSQ API to create activities/reminders
+      → For email items: sends message to Email Service (TCP :3008)
+          → Email Service renders template + sends via SendGrid
+          → Logs the email in ClientEmailScheduler table
+
+  The Email Service also has its own scheduler & retry mechanism -- if a scheduled email fails to send, it gets queued in ClientEmailScheduler with failure tracking in
+  ClientEmailSchedulerFailures, and the system retries delivery.
+
+  So in short: the cron jobs are essentially automated follow-up and reminder workflows that keep leads and policies from falling through the cracks.
+
+
+   What is Sibro?
+
+    Sibro is an insurance broker management platform -- essentially a regulatory/compliance system where BimaKavach (as a licensed broker) must record all policies and
+    transactions.
+
+    Two-Way Data Flow
+
+    1. Sibro → BimaKavach (Master Data Sync)
+
+    This is a pull operation triggered manually or on schedule via TCP message patterns. It keeps BimaKavach's local copy of Sibro's reference data up to date.
+
+    What gets pulled:
+    - Insurers & their branches -- which insurance companies Sibro knows about, their branch offices, agent codes, GST numbers
+    - Products -- Sibro's product catalog (paginated, could be large)
+    - CRM Users -- the sales/ops team members registered in Sibro
+    - Business Owners -- the business owner hierarchy in Sibro
+    - Policy Custom Fields -- per-product custom fields that Sibro requires when recording a policy (some are text, some dropdowns, some mandatory)
+
+    How the sync works:
+    1. Question Service calls Sibro API (e.g., GET /insurers)
+    2. Marks all existing local records as isActive = false
+    3. Upserts each record from the API response
+    4. Stale records that weren't in the response stay inactive (soft delete)
+
+    Why this matters: BimaKavach needs these IDs to create the mapping tables -- "our insurer X = Sibro's insurer Y". Without these mappings, it can't push policies to
+    Sibro.
+
+    2. BimaKavach → Sibro (On Policy Creation)
+
+    This is the critical flow. When a policy is created in BimaKavach, it automatically pushes it to Sibro. Here's the step-by-step:
+
+    Policy created in BimaKavach
+            │
+            ▼
+    Check feature flag (SEND_POLICY_TO_SIBRO)
+            │ No → skip
+            ▼ Yes
+    Search for client in Sibro
+       Try PAN number first
+       → No match? Try PAN extracted from GST
+       → No match? Try email
+       → No match? Try phone
+            │
+            ▼
+       ┌─────────────────────────────────┐
+       │ 1 match  → auto-save mapping   │
+       │ 2+ matches → needs manual pick  │
+       │ 0 matches → create new client   │
+       │   (with GST, PAN, Aadhar as    │
+       │    custom fields)               │
+       └─────────────────────────────────┘
+            │
+            ▼
+    POST /add-policy to Sibro
+       Sends: Sibro client ID, business owner,
+       CRM user, product ID, start date,
+       gross premium, custom field values
+            │
+            ▼
+    POST /add-premium-transaction/{sibroPolicyId}
+       Sends: insurer + branch ID, premium amount,
+       payment mode, transaction date, remarks
+            │
+            ▼
+    Save record to sibro_client_transactions
+       (tracks: our policy ID ↔ Sibro policy ID)
+
+    If anything fails at any stage, the system:
+    - Records which exact stage failed (resolve_client / create_policy / create_premium_transaction / save_transaction)
+    - Sends an error email to the admin with the failure details
+    - Logs to CloudWatch
+
+    3. The Mapping Layer
+
+    This is what glues the two systems together:
+
+    ┌────────────────────────┬──────────────────────────────────────────────┐
+    │     Mapping Table      │               What it connects               │
+    ├────────────────────────┼──────────────────────────────────────────────┤
+    │ sibro_insurer_mapping  │ "Our HDFC Ergo = Sibro insurer #47"          │
+    ├────────────────────────┼──────────────────────────────────────────────┤
+    │ sibro_product_mapping  │ "Our Fire Insurance = Sibro product #12"     │
+    ├────────────────────────┼──────────────────────────────────────────────┤
+    │ sibro_crm_user_mapping │ "Our user Aditya = Sibro CRM user #5"        │
+    ├────────────────────────┼──────────────────────────────────────────────┤
+    │ sibro_client_mapping   │ "User 123 + Company 456 = Sibro client #789" │
+    └────────────────────────┴──────────────────────────────────────────────┘
+
+    These mappings are set up via the admin panel (upsert endpoints). Without them, the system can't translate BimaKavach entities into Sibro entities when pushing a
+    policy.
+
+    In Simple Terms
+
+    Sibro is like a ledger that the broker must maintain by law. BimaKavach automates keeping that ledger updated -- it pulls Sibro's master data to stay in sync, and
+    every time a policy is sold, it automatically records it in Sibro with the correct client, insurer, product, and payment details.
+
+
+     LeadSquared Flow
+
+      LeadSquared is the CRM -- it tracks every potential customer from the moment they land on the website until they buy (and after, for renewals).
+
+      Data Going TO LeadSquared
+
+      1. Website Visitor Tracking (Automatic, passive)
+
+      A tracking script (Tracker.js, account ID 66484) loads on every page of BK Web with a 4-second delay. It silently sends to LeadSquared:
+      - Which pages the visitor viewed
+      - How long they stayed
+      - What they clicked on
+      - Form interactions
+
+      This happens before the user even signs up. LeadSquared uses this for lead scoring.
+
+      2. Lead Creation (On quote generation)
+
+      When a user fills L1 questions and gets quotes, a lead is created in LeadSquared.
+
+      Core fields sent:
+      - FirstName, LastName, EmailAddress, Phone (+91 format), Company
+
+      Custom fields (mx_ namespace):*
+      - mx_Product_Name -- which insurance product they looked at
+      - mx_Lead_Intent -- e.g. "Medium"
+      - mx_OTP_Verification_Status -- did they verify OTP
+      - mx_Source_Campaign_Term, SourceCampaign, SourceMedium -- marketing attribution
+      - mx_Sibro_CRM_ID, mx_CS_Team_Email, mx_Ops_Team_Email -- internal routing
+
+      Lead source is tagged as one of: Online | Offline | Bulk-Upload | Lead-Square | Recommendations | Partner-Lead
+
+      3. Product-Specific Leads (Question Service)
+
+      When a user fills L1 for specific products, the Question Service sends product-specific custom fields to LeadSquared. For example:
+
+      CPM (Contractor's Plant & Machinery):
+      - mx_City, mx_Total_Sum_Insured, mx_Policy_Type
+      - mx_Plant_and_Machinery_Type, mx_Machinery_details
+      - mx_Third_Party_Liability, mx_Terrorism
+
+      Similar product-specific fields exist for: EAR, CAR, Crime, Cyber, CGL, D&O, E&O -- each product sends its own set of underwriting attributes.
+
+      4. Activity Logging (On policy events)
+
+      When things happen to a lead, activities are created in LeadSquared:
+      - Policy purchased → activity with policy number, premium, insurer
+      - Quote sent to client → activity logged
+      - Proposal form initiated → activity logged
+
+      This builds a timeline in LeadSquared so sales/CS can see everything that happened.
+
+      5. Opportunities (Cross-sell & Renewal)
+
+      After a policy is purchased, the system creates opportunities in LeadSquared for:
+      - Cross-selling other products to the same client
+      - Renewal when the policy nears expiry
+
+      These show up as pipeline items for the sales team.
+
+      6. Bulk Uploads (CSV)
+
+      Admins can upload CSV files for bulk operations:
+      - Create leads in bulk
+      - Update existing leads in bulk
+      - Create activities for existing leads
+      - Renewal bulk uploads -- processes renewal data with date normalization
+
+      These are queued and processed async at 5 requests/second rate limit. Each row's result (success/failure, payload sent, response received, errors) is tracked in
+      LsqBulkOperationResult.
+
+      7. Daily Cron Jobs (4:30 AM IST)
+
+      Every morning the API Gateway runs scheduled tasks:
+      - Stale leads (45 days) -- leads that never converted get a reminder activity
+      - Policy expiry reminders -- at 60, 21, 14, 7, 1 days before expiry
+      - Proposal form reminders -- for incomplete proposal forms
+
+      These create activities/reminders in LeadSquared so the sales team's dashboard shows them as action items.
+
+      ---
+      Data Coming FROM LeadSquared
+
+      1. Payment Completion Webhooks
+
+      When a payment is completed (triggered from LeadSquared's workflow automation):
+
+      /lead-square/byId/:id -- Normal payment completion:
+      1. Gateway receives the lead prospect ID
+      2. Waits 30 seconds (for payment processing to settle)
+      3. Fetches full lead details from LeadSquared (Lead.GetById)
+      4. Creates the policy in BimaKavach
+      5. Updates the LeadSquared activity with policy details
+      6. Creates cross-sell/renewal opportunities
+      7. Sends confirmation emails to customer + ops team
+
+      /lead-square/byOpportunityId/:id -- Cross-sell payment:
+      - Same flow but for an existing customer buying a second product
+
+      2. Renewal Webhooks
+
+      /lead-square/renewal-management/send-payment-link/:id -- Sends a payment link to the customer for renewal
+
+      /lead-square/renewal-management/after-payment/:id -- After renewal payment, processes the renewal details
+
+      3. Callback Requests
+
+      /lead-square/callback-request -- Customer requests a callback from the website. Stores their phone + LeadSquared prospect ID so the sales team can call them back.
+
+      4. Lead Details Fetches
+
+      The Gateway regularly fetches lead data from LeadSquared to:
+      - Get the full lead profile with all custom fields
+      - Get opportunities associated with a lead
+      - Get activity details for a specific interaction
+      - Map LeadSquared user/owner IDs to actual team members
+
+      ---
+      The Mapping Layer
+
+      ┌────────────────────────────┬──────────────────────────────────────────────────────────────────────────────────┐
+      │           Table            │                                     Purpose                                      │
+      ├────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────┤
+      │ LeadSquare                 │ Internal lead record -- links to productId, company, tracks if converted, source │
+      ├────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────┤
+      │ LeadSquareIdMapping        │ "Our lead #123 = LSQ prospect #ABC"                                              │
+      ├────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────┤
+      │ L1FormLsqActivityIdMapping │ "L1 form submission for company X = LSQ activity #DEF + opportunity #GHI"        │
+      ├────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────┤
+      │ LsqCallbackRequests        │ Phone + prospect ID queue for callbacks                                          │
+      ├────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────┤
+      │ LsqBulkOperation           │ Job tracker for bulk uploads (QUEUED → COMPLETE/FAILED)                          │
+      ├────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────┤
+      │ LsqBulkOperationResult     │ Per-row results with full payload/response/error details                         │
+      └────────────────────────────┴──────────────────────────────────────────────────────────────────────────────────┘
+
+      ---
+      In Simple Terms
+
+      LeadSquared is the sales team's single source of truth. Every interaction a potential customer has -- visiting the website, getting a quote, verifying OTP, purchasing
+      a policy -- gets recorded there. The sales team sees their pipeline, gets reminders for follow-ups, and the system automatically nudges stale leads and expiring
+      policies. The webhooks allow LeadSquared to trigger actions back in BimaKavach (like creating a policy after payment).
+

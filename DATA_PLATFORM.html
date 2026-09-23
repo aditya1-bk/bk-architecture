@@ -1,0 +1,2045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BimaKavach — Unified Tech & Data Platform</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #1a1a2e;
+    --heading: #0e2b72;
+    --border: #e0e0e0;
+    --code-bg: #f5f5f5;
+    --table-header: #0e2b72;
+    --table-header-text: #ffffff;
+    --table-stripe: #f8f9fa;
+    --link: #1565c0;
+    --sidebar-bg: #f8f9fa;
+    --sidebar-active: #0e2b72;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.7;
+    display: flex;
+  }
+
+  /* Sidebar TOC */
+  nav.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    padding: 20px 16px;
+    font-size: 13px;
+    z-index: 100;
+  }
+
+  nav.sidebar h2 {
+    font-size: 15px;
+    color: var(--heading);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--heading);
+  }
+
+  nav.sidebar ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  nav.sidebar li {
+    margin: 2px 0;
+  }
+
+  nav.sidebar li.level-2 {
+    padding-left: 16px;
+  }
+
+  nav.sidebar li.level-3 {
+    padding-left: 32px;
+    font-size: 12px;
+  }
+
+  nav.sidebar a {
+    color: var(--text);
+    text-decoration: none;
+    display: block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+
+  nav.sidebar a:hover,
+  nav.sidebar a.active {
+    background: var(--sidebar-active);
+    color: #fff;
+  }
+
+  /* Main content */
+  main {
+    margin-left: 280px;
+    max-width: 1100px;
+    padding: 40px 48px;
+    width: calc(100% - 280px);
+  }
+
+  h1 {
+    font-size: 2.2em;
+    color: var(--heading);
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 3px solid var(--heading);
+  }
+
+  h2 {
+    font-size: 1.6em;
+    color: var(--heading);
+    margin-top: 48px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+  }
+
+  h3 {
+    font-size: 1.25em;
+    color: var(--heading);
+    margin-top: 36px;
+    margin-bottom: 12px;
+  }
+
+  h4 {
+    font-size: 1.05em;
+    color: var(--heading);
+    margin-top: 24px;
+    margin-bottom: 8px;
+  }
+
+  p {
+    margin-bottom: 16px;
+  }
+
+  strong { font-weight: 600; }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 36px 0;
+  }
+
+  a {
+    color: var(--link);
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  ul, ol {
+    margin: 8px 0 16px 24px;
+  }
+
+  li {
+    margin: 4px 0;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    font-size: 14px;
+  }
+
+  thead th {
+    background: var(--table-header);
+    color: var(--table-header-text);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr:nth-child(even) {
+    background: var(--table-stripe);
+  }
+
+  tbody tr:hover {
+    background: #e8eaf6;
+  }
+
+  /* Code blocks */
+  code {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+
+  pre {
+    background: var(--code-bg);
+    padding: 16px 20px;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 12px 0 20px;
+    border: 1px solid var(--border);
+  }
+
+  pre code {
+    background: none;
+    padding: 0;
+  }
+
+  /* Mermaid diagrams */
+  .mermaid-wrapper {
+    position: relative;
+    margin: 20px 0 28px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    background: #fafbfc;
+    overflow-x: auto;
+  }
+
+  .mermaid-wrapper .expand-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--heading);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    z-index: 10;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+  }
+
+  .mermaid-wrapper .expand-btn:hover {
+    opacity: 1;
+  }
+
+  .mermaid svg { overflow: visible !important; }
+  .mermaid svg * { overflow: visible !important; }
+  .node foreignObject { overflow: visible !important; }
+  .nodeLabel { white-space: nowrap !important; }
+  .edgeLabel { white-space: nowrap !important; }
+  .label { overflow: visible !important; }
+
+  /* Fullscreen Modal */
+  .diagram-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.92);
+    z-index: 10000;
+    flex-direction: column;
+  }
+
+  .diagram-modal.active {
+    display: flex;
+  }
+
+  .modal-toolbar {
+    display: flex;
+    gap: 6px;
+    padding: 10px 16px;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    z-index: 10001;
+    background: rgba(0,0,0,0.5);
+  }
+
+  .modal-toolbar button {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 4px;
+    padding: 6px 14px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .modal-toolbar button:hover {
+    background: rgba(255,255,255,0.3);
+  }
+
+  .modal-viewport {
+    flex: 1;
+    overflow: hidden;
+    cursor: grab;
+    position: relative;
+  }
+
+  .modal-viewport:active {
+    cursor: grabbing;
+  }
+
+  .modal-viewport .modal-content {
+    transform-origin: 0 0;
+    will-change: transform;
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .modal-viewport .modal-content svg {
+    overflow: visible !important;
+    display: block;
+  }
+
+  .modal-hint {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    background: rgba(0,0,0,0.5);
+    padding: 6px 16px;
+    border-radius: 20px;
+    transition: opacity 1s;
+    pointer-events: none;
+  }
+
+  .modal-hint.faded {
+    opacity: 0;
+  }
+
+  /* Callout boxes */
+  .callout {
+    border-left: 4px solid var(--heading);
+    background: #f0f4ff;
+    padding: 16px 20px;
+    margin: 16px 0 24px;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .callout.green {
+    border-left-color: #2e7d32;
+    background: #e8f5e9;
+  }
+
+  .callout.amber {
+    border-left-color: #f57f17;
+    background: #fff8e1;
+  }
+
+  .callout.red {
+    border-left-color: #c62828;
+    background: #ffebee;
+  }
+
+  /* Flow diagrams in text */
+  .flow-text {
+    background: var(--code-bg);
+    padding: 16px 20px;
+    border-radius: 6px;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 12px 0 20px;
+    border: 1px solid var(--border);
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    nav.sidebar {
+      display: none;
+    }
+    main {
+      margin-left: 0;
+      width: 100%;
+      padding: 24px 20px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Sidebar TOC -->
+<nav class="sidebar">
+  <h2>Contents</h2>
+  <ul>
+    <li><a href="#1-what-were-solving">1. What We're Solving</a></li>
+    <li><a href="#2-where-we-are-today">2. Where We Are Today</a></li>
+    <li class="level-2"><a href="#21-no-single-source-of-truth">2.1 No Single Source of Truth</a></li>
+    <li class="level-2"><a href="#22-point-to-point-integrations">2.2 Point-to-Point Integrations</a></li>
+    <li class="level-2"><a href="#23-fragile-data-flows">2.3 Fragile Data Flows</a></li>
+    <li class="level-2"><a href="#24-no-event-history">2.4 No Event History</a></li>
+    <li class="level-2"><a href="#25-custom-tracking-tables">2.5 Custom Tracking Tables</a></li>
+    <li><a href="#3-approaches">3. Approaches Evaluated</a></li>
+    <li class="level-2"><a href="#31-aws-managed">3.1 AWS Managed (EventBridge + SQS)</a></li>
+    <li class="level-2"><a href="#32-kafka-redpanda">3.2 Kafka/Redpanda</a></li>
+    <li class="level-2"><a href="#33-bullmq-postgresql">3.3 BullMQ + PostgreSQL</a></li>
+    <li class="level-2"><a href="#34-hybrid-phased">3.4 Hybrid Phased</a></li>
+    <li><a href="#4-comparison-matrix">4. Comparison Matrix</a></li>
+    <li><a href="#5-kafka-deep-dive">5. Kafka Deep Dive</a></li>
+    <li class="level-2"><a href="#51-why-kafka">5.1 Why Kafka</a></li>
+    <li class="level-2"><a href="#52-cluster-architecture">5.2 Cluster Architecture</a></li>
+    <li class="level-2"><a href="#53-topic-design">5.3 Topic Design</a></li>
+    <li class="level-2"><a href="#54-event-schema">5.4 Event Schema</a></li>
+    <li class="level-2"><a href="#55-consumer-groups">5.5 Consumer Groups</a></li>
+    <li class="level-2"><a href="#56-flow-changes">5.6 Flow Changes</a></li>
+    <li class="level-2"><a href="#57-cdc-debezium">5.7 CDC with Debezium</a></li>
+    <li class="level-2"><a href="#58-data-lake">5.8 Data Lake &amp; Analytics</a></li>
+    <li class="level-2"><a href="#59-nestjs-integration">5.9 NestJS Integration</a></li>
+    <li class="level-2"><a href="#510-observability">5.10 Observability</a></li>
+    <li class="level-2"><a href="#511-migration-strategy">5.11 Migration Strategy</a></li>
+    <li class="level-2"><a href="#512-cost-breakdown">5.12 Cost Breakdown</a></li>
+    <li><a href="#6-recommendation">6. Our Recommendation</a></li>
+  </ul>
+</nav>
+
+<!-- Fullscreen Modal -->
+<div class="diagram-modal" id="diagramModal">
+  <div class="modal-toolbar">
+    <button onclick="modalZoom(1.3)" title="Zoom In (+)">+ Zoom In</button>
+    <button onclick="modalZoom(0.7)" title="Zoom Out (-)">- Zoom Out</button>
+    <button onclick="modalFit()" title="Fit to Screen (0)">Fit</button>
+    <button onclick="modalReset()" title="Reset to 1:1">1:1</button>
+    <button onclick="closeModal()" title="Close (Esc)">Close</button>
+  </div>
+  <div class="modal-viewport" id="modalViewport">
+    <div class="modal-content" id="modalContent"></div>
+  </div>
+  <div class="modal-hint" id="modalHint">Scroll to zoom &middot; Drag to pan &middot; +/- keys to zoom &middot; 0 to fit &middot; Esc to close</div>
+</div>
+
+<!-- Main content -->
+<main>
+
+<h1>BimaKavach &mdash; Unified Tech &amp; Data Platform</h1>
+
+<!-- ============================================================ -->
+<h2 id="1-what-were-solving">1. What We're Solving</h2>
+
+<p>We need to build a <strong>unified tech platform</strong> that acts as a single source of truth for BimaKavach. Here's what that means:</p>
+
+<table>
+  <thead>
+    <tr><th>Capability</th><th>What We Need</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Source of Truth</strong></td><td>One authoritative system for policy, lead, client, and transaction data</td></tr>
+    <tr><td><strong>Data Queuing &amp; Relaying</strong></td><td>Reliable async message delivery between our services and external systems</td></tr>
+    <tr><td><strong>Data Ingestion &amp; Aggregation</strong></td><td>Collect data from multiple sources (LSQ, Sibro, payment gateways) into a unified model</td></tr>
+    <tr><td><strong>Data Pipelines</strong></td><td>Automated flows for sync, transformation, and delivery of data across systems</td></tr>
+  </tbody>
+</table>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="2-where-we-are-today">2. Where We Are Today</h2>
+
+<p>Let's look at the gaps in our current architecture that this platform needs to address.</p>
+
+<h3 id="21-no-single-source-of-truth">2.1 No Single Source of Truth</h3>
+
+<p>Today, policy data lives simultaneously in PostgreSQL, LeadSquared, and Sibro &mdash; with sync logic scattered across different services. Each system holds its own version of the truth, and there's no guaranteed consistency between them.</p>
+
+<pre><code>PostgreSQL          LeadSquared           Sibro
+&#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;       &#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;        &#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;
+&#x2502; Policy   &#x2502;       &#x2502; Lead +   &#x2502;        &#x2502; Policy + &#x2502;
+&#x2502; table    &#x2502;  ???  &#x2502; Activity &#x2502;  ???   &#x2502; Premium  &#x2502;
+&#x2502;          &#x2502;       &#x2502; records  &#x2502;        &#x2502; Txn      &#x2502;
+&#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;       &#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;        &#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;
+     No guaranteed consistency between these three</code></pre>
+
+<h3 id="22-point-to-point-integrations">2.2 Point-to-Point Integrations</h3>
+
+<p>Every service directly calls external APIs with its own error handling. There's no centralized strategy for retries, failures, or observability.</p>
+
+<table>
+  <thead>
+    <tr><th>Service</th><th>What It Calls</th><th>The Problem</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>API Gateway</td><td>LeadSquared, MSG91, Payment gateways, Probe</td><td>Custom retry logic per integration</td></tr>
+    <tr><td>Question Service</td><td>Sibro, Chola, Google Document AI</td><td>Staged execution with email-on-failure</td></tr>
+    <tr><td>Email Service</td><td>SendGrid</td><td>Custom scheduler tables for retry</td></tr>
+    <tr><td>POS Backend</td><td>Firebase, AiSensy, MSG91</td><td>Independent error handling</td></tr>
+  </tbody>
+</table>
+
+<h3 id="23-fragile-data-flows">2.3 Fragile Data Flows</h3>
+
+<p>Several of our core data flows rely on brittle patterns:</p>
+
+<table>
+  <thead>
+    <tr><th>Current Pattern</th><th>The Risk</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Cron jobs at 4:30 AM IST</td><td>Single daily run &mdash; if it fails, we wait 24 hours</td></tr>
+    <tr><td>30-second <code>sleep</code> after payment webhook</td><td>Arbitrary wait, race condition risk</td></tr>
+    <tr><td>Manual Sibro master data sync</td><td>Human-dependent, can drift silently</td></tr>
+    <tr><td>CSV bulk uploads at 5 req/sec</td><td>Custom rate limiting via <code>LsqBulkOperation</code> tables</td></tr>
+    <tr><td>Error emails to admin on Sibro failure</td><td>No retry, no replay, someone has to manually intervene</td></tr>
+  </tbody>
+</table>
+
+<h3 id="24-no-event-history">2.4 No Event History</h3>
+
+<p>If a Sibro push fails at the <code>create_premium_transaction</code> stage, we have no mechanism to replay from that checkpoint. The system sends an error email and moves on. Every failed state requires manual investigation and re-triggering.</p>
+
+<h3 id="25-custom-tracking-tables">2.5 Custom Tracking Tables That Shouldn't Exist</h3>
+
+<p>We've built infrastructure-level concerns into our database. These tables are essentially hand-rolled queues and job trackers &mdash; something a proper queue system would handle out of the box:</p>
+
+<table>
+  <thead>
+    <tr><th>Table</th><th>What It's Doing</th><th>What It Should Be</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>ClientEmailScheduler</code></td><td>Job scheduling + status tracking</td><td>A delayed job queue</td></tr>
+    <tr><td><code>ClientEmailSchedulerFailures</code></td><td>Failure tracking + retry state</td><td>A dead letter queue</td></tr>
+    <tr><td><code>LsqBulkOperation</code></td><td>Job state machine (QUEUED &rarr; COMPLETE/FAILED)</td><td>A job queue with status</td></tr>
+    <tr><td><code>LsqBulkOperationResult</code></td><td>Per-row result tracking with payload/response</td><td>Job result storage</td></tr>
+  </tbody>
+</table>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="3-approaches">3. Approaches We've Evaluated</h2>
+
+<p>We've looked at four approaches, ranging from fully managed cloud services to lightweight additions to our existing stack. Each has tradeoffs worth understanding.</p>
+
+<!-- ─── 3.1 ─── -->
+<h3 id="31-aws-managed">3.1 Approach 1: AWS Managed Services (EventBridge + SQS)</h3>
+
+<p>Since we're already on AWS ap-south-1, this approach leans fully into the managed ecosystem.</p>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+graph TB
+    subgraph "NestJS Services (existing)"
+        GW["API Gateway :3005"]
+        QS["Question :3007"]
+        ES["Email :3008"]
+        PF["Proposal :3009"]
+        POS["POS :3011"]
+    end
+
+    subgraph "Event Bus"
+        EB["Amazon EventBridge&lt;br/&gt;(Central Event Bus)"]
+    end
+
+    subgraph "Queues (SQS)"
+        Q_SIBRO["sibro-sync&lt;br/&gt;FIFO Queue"]
+        Q_LSQ["lsq-sync&lt;br/&gt;Standard Queue"]
+        Q_EMAIL["email-send&lt;br/&gt;Standard Queue"]
+        Q_PAYMENT["payment-process&lt;br/&gt;FIFO Queue"]
+        Q_DLQ["Dead Letter Queues&lt;br/&gt;(per queue)"]
+    end
+
+    subgraph "Consumers"
+        W_SIBRO["Sibro Worker&lt;br/&gt;Lambda / ECS"]
+        W_LSQ["LSQ Worker&lt;br/&gt;Lambda / ECS"]
+        W_EMAIL["Email Worker&lt;br/&gt;Lambda / ECS"]
+        W_PAY["Payment Worker&lt;br/&gt;Lambda / ECS"]
+    end
+
+    subgraph "Data Pipeline"
+        S3_EVENTS["S3&lt;br/&gt;Event Archive"]
+        ATHENA["Athena&lt;br/&gt;Ad-hoc Query"]
+    end
+
+    GW &amp; QS &amp; ES &amp; PF &amp; POS -->|"publish events"| EB
+    EB --> Q_SIBRO &amp; Q_LSQ &amp; Q_EMAIL &amp; Q_PAYMENT
+    EB -->|"archive all"| S3_EVENTS
+    Q_SIBRO --> W_SIBRO
+    Q_LSQ --> W_LSQ
+    Q_EMAIL --> W_EMAIL
+    Q_PAYMENT --> W_PAY
+    Q_SIBRO &amp; Q_LSQ &amp; Q_EMAIL &amp; Q_PAYMENT -.->|"failures"| Q_DLQ
+    S3_EVENTS --> ATHENA
+  </pre>
+</div>
+
+<h4>How it works:</h4>
+<table>
+  <thead>
+    <tr><th>Component</th><th>Role</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>EventBridge</strong></td><td>Central event bus &mdash; our services publish domain events (<code>policy.created</code>, <code>lead.captured</code>, <code>payment.completed</code>) instead of making direct calls</td></tr>
+    <tr><td><strong>SQS Standard</strong></td><td>Per-consumer queues for at-least-once delivery (email, LSQ sync)</td></tr>
+    <tr><td><strong>SQS FIFO</strong></td><td>Ordered queues for sequential operations (Sibro policy push, payment processing)</td></tr>
+    <tr><td><strong>DLQ</strong></td><td>Dead letter queues per consumer &mdash; replaces our current error emails with inspectable, replayable failures</td></tr>
+    <tr><td><strong>S3 + Athena</strong></td><td>Event archive for audit trail and analytics queries</td></tr>
+    <tr><td><strong>EventBridge Rules</strong></td><td>Route events to specific queues based on event type</td></tr>
+  </tbody>
+</table>
+
+<h4>Example event schema:</h4>
+<pre><code>{
+  "source": "bimakavach.question-service",
+  "detail-type": "policy.created",
+  "detail": {
+    "policyId": "POL-12345",
+    "productId": 42,
+    "insurerId": 7,
+    "companyId": 456,
+    "userId": 123,
+    "grossPremium": 150000,
+    "timestamp": "2026-04-05T10:30:00Z"
+  }
+}</code></pre>
+
+<h4>What this replaces in our current system:</h4>
+<table>
+  <thead><tr><th>What We Have Today</th><th>What It Becomes</th></tr></thead>
+  <tbody>
+    <tr><td>Direct TCP <code>send-email</code> for async operations</td><td>Publish <code>email.send.requested</code> &rarr; SQS &rarr; Email Worker</td></tr>
+    <tr><td>30-second payment sleep</td><td><code>payment.completed</code> event triggers policy creation</td></tr>
+    <tr><td>Sibro staged execution + error email</td><td>FIFO queue + DLQ with automatic retry</td></tr>
+    <tr><td><code>LsqBulkOperation</code> tables</td><td>SQS batch processing with per-message tracking</td></tr>
+    <tr><td>4:30 AM cron jobs</td><td>EventBridge Scheduler (granular scheduling)</td></tr>
+  </tbody>
+</table>
+
+<h4>Advantages:</h4>
+<ul>
+  <li>Zero infrastructure management &mdash; fully managed by AWS</li>
+  <li>Pay-per-use pricing, well suited for our current scale</li>
+  <li>Native DLQ, retry, and visibility</li>
+  <li>We're already on AWS &mdash; no new vendor relationship</li>
+  <li>EventBridge archive gives us event replay for free</li>
+</ul>
+
+<h4>Tradeoffs:</h4>
+<ul>
+  <li>Vendor lock-in to AWS</li>
+  <li>EventBridge has a 256KB event size limit</li>
+  <li>SQS has no native topic fan-out (would need SNS or EventBridge rules)</li>
+  <li>Team would need to learn AWS SDK patterns</li>
+  <li>Cold start latency if we use Lambda consumers</li>
+</ul>
+
+<p><strong>Estimated cost (our volume):</strong> ~$50-200/month for EventBridge + SQS</p>
+
+<hr>
+
+<!-- ─── 3.2 ─── -->
+<h3 id="32-kafka-redpanda">3.2 Approach 2: Kafka/Redpanda as Central Nervous System</h3>
+
+<p>This approach introduces a central event streaming platform that all our services publish to and consume from. It's the most architecturally ambitious option.</p>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+graph TB
+    subgraph "Producers (NestJS Services)"
+        GW["API Gateway :3005"]
+        QS["Question :3007"]
+        ES["Email :3008"]
+        PF["Proposal :3009"]
+        POS["POS :3011"]
+    end
+
+    subgraph "Kafka / Redpanda Cluster"
+        direction TB
+        T_POLICY["policy.events&lt;br/&gt;(created, updated, expired, renewed)"]
+        T_LEAD["lead.events&lt;br/&gt;(captured, otp-verified, converted, stale)"]
+        T_PAYMENT["payment.events&lt;br/&gt;(initiated, completed, failed)"]
+        T_EMAIL["email.commands&lt;br/&gt;(send, schedule, retry)"]
+        T_SIBRO["sibro.sync&lt;br/&gt;(push-policy, pull-master)"]
+        T_LSQ["lsq.sync&lt;br/&gt;(create-lead, log-activity, bulk-ops)"]
+        T_AUDIT["audit.log&lt;br/&gt;(all events, immutable, long retention)"]
+    end
+
+    subgraph "Consumers"
+        C_SIBRO["Sibro Connector&lt;br/&gt;(consumer group)"]
+        C_LSQ["LSQ Connector&lt;br/&gt;(consumer group)"]
+        C_EMAIL["Email Worker&lt;br/&gt;(consumer group)"]
+        C_ANALYTICS["Analytics Pipeline&lt;br/&gt;(consumer group)"]
+    end
+
+    subgraph "Kafka Connect"
+        CDC["Debezium CDC&lt;br/&gt;(PostgreSQL &rarr; Kafka)"]
+        S3_SINK["S3 Sink Connector&lt;br/&gt;(Kafka &rarr; S3)"]
+    end
+
+    subgraph "Data Warehouse"
+        S3["S3 Data Lake"]
+        WAREHOUSE["Redshift / BigQuery&lt;br/&gt;or Athena"]
+    end
+
+    GW &amp; QS &amp; ES &amp; PF &amp; POS --> T_POLICY &amp; T_LEAD &amp; T_PAYMENT &amp; T_EMAIL &amp; T_SIBRO &amp; T_LSQ
+    T_POLICY &amp; T_LEAD &amp; T_PAYMENT --> T_AUDIT
+
+    T_SIBRO --> C_SIBRO
+    T_LSQ --> C_LSQ
+    T_EMAIL --> C_EMAIL
+    T_AUDIT --> C_ANALYTICS
+
+    CDC -->|"DB changes"| T_POLICY
+    T_AUDIT --> S3_SINK --> S3 --> WAREHOUSE
+  </pre>
+</div>
+
+<h4>Topic design:</h4>
+<table>
+  <thead><tr><th>Topic</th><th>Key</th><th>Partitions</th><th>Retention</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>policy.events</code></td><td>policyId</td><td>6</td><td>30 days</td><td>All policy lifecycle events</td></tr>
+    <tr><td><code>lead.events</code></td><td>leadId</td><td>6</td><td>30 days</td><td>Lead lifecycle from capture to conversion</td></tr>
+    <tr><td><code>payment.events</code></td><td>transactionId</td><td>3</td><td>30 days</td><td>Payment state transitions</td></tr>
+    <tr><td><code>email.commands</code></td><td>recipientEmail</td><td>3</td><td>7 days</td><td>Email send requests</td></tr>
+    <tr><td><code>sibro.sync</code></td><td>policyId</td><td>3</td><td>14 days</td><td>Sibro outbound sync commands</td></tr>
+    <tr><td><code>lsq.sync</code></td><td>leadId</td><td>3</td><td>14 days</td><td>LeadSquared sync commands</td></tr>
+    <tr><td><code>audit.log</code></td><td>serviceId</td><td>6</td><td>365 days</td><td>Immutable log of all events</td></tr>
+  </tbody>
+</table>
+
+<h4>Redpanda vs Kafka:</h4>
+<table>
+  <thead><tr><th></th><th>Apache Kafka</th><th>Redpanda</th></tr></thead>
+  <tbody>
+    <tr><td>Runtime</td><td>JVM (needs tuning)</td><td>C++ (single binary)</td></tr>
+    <tr><td>Ops complexity</td><td>High (ZooKeeper/KRaft)</td><td>Low (no JVM, no ZK)</td></tr>
+    <tr><td>Kafka API compatible</td><td>Native</td><td>Yes (drop-in replacement)</td></tr>
+    <tr><td>Resource usage</td><td>Heavy (8GB+ RAM)</td><td>Light (2GB viable)</td></tr>
+    <tr><td>Managed options</td><td>AWS MSK, Confluent Cloud</td><td>Redpanda Cloud</td></tr>
+  </tbody>
+</table>
+
+<p><strong>Estimated cost:</strong> MSK ~$300-600/month (small cluster), Redpanda Cloud ~$200-400/month, or self-hosted on existing EC2</p>
+
+<hr>
+
+<!-- ─── 3.3 ─── -->
+<h3 id="33-bullmq-postgresql">3.3 Approach 3: BullMQ + PostgreSQL (NestJS-Native)</h3>
+
+<p>This approach stays closest to our current stack. We add Redis + BullMQ for queuing while PostgreSQL remains the source of truth, enhanced with an event log.</p>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+graph TB
+    subgraph "NestJS Services (existing)"
+        GW["API Gateway :3005"]
+        QS["Question :3007"]
+        ES["Email :3008"]
+        PF["Proposal :3009"]
+        POS["POS :3011"]
+        CS["Common :3006"]
+    end
+
+    subgraph "Redis + BullMQ"
+        direction TB
+        Q_SIBRO["sibro-policy-sync&lt;br/&gt;retry: 3, backoff: exponential"]
+        Q_SIBRO_MASTER["sibro-master-sync&lt;br/&gt;repeatable: daily"]
+        Q_LSQ_LEAD["lsq-lead-capture&lt;br/&gt;rate limit: 5/sec"]
+        Q_LSQ_ACTIVITY["lsq-activity-log"]
+        Q_LSQ_BULK["lsq-bulk-operations&lt;br/&gt;concurrency: 5"]
+        Q_EMAIL["email-send&lt;br/&gt;priority queue"]
+        Q_EMAIL_SCHED["email-scheduled&lt;br/&gt;delayed jobs"]
+        Q_PAYMENT["payment-process&lt;br/&gt;LIFO, no duplicates"]
+        Q_CRON["scheduled-jobs&lt;br/&gt;repeatable jobs"]
+    end
+
+    subgraph "PostgreSQL (Source of Truth)"
+        DB_POLICY["Policy, Lead, Client&lt;br/&gt;(existing tables)"]
+        DB_EVENTS["domain_events&lt;br/&gt;(new: event log table)"]
+        DB_VIEWS["Materialized Views&lt;br/&gt;(new: cross-service aggregates)"]
+    end
+
+    GW &amp; QS &amp; ES &amp; PF &amp; POS -->|"add jobs"| Q_SIBRO &amp; Q_LSQ_LEAD &amp; Q_EMAIL &amp; Q_PAYMENT
+    GW &amp; QS &amp; ES &amp; PF &amp; POS -->|"write events"| DB_EVENTS
+    GW &amp; QS &amp; ES &amp; PF &amp; POS -->|"TCP (sync reads)"| CS
+
+    Q_SIBRO &amp; Q_LSQ_LEAD &amp; Q_EMAIL &amp; Q_PAYMENT -->|"process"| GW &amp; QS &amp; ES
+    DB_EVENTS --> DB_VIEWS
+  </pre>
+</div>
+
+<h4>Infrastructure change &mdash; we only add Redis:</h4>
+<pre><code># Addition to our docker-compose.yml
+services:
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes  # AOF persistence
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data</code></pre>
+
+<h4>Queue design:</h4>
+<table>
+  <thead><tr><th>Queue</th><th>Config</th><th>What It Replaces</th></tr></thead>
+  <tbody>
+    <tr><td><code>sibro-policy-sync</code></td><td>retry: 3, backoff: exponential</td><td>Sibro staged execution + error emails</td></tr>
+    <tr><td><code>sibro-master-sync</code></td><td>repeatable: <code>0 4 * * *</code> (daily 4 AM)</td><td>Manual trigger / cron</td></tr>
+    <tr><td><code>lsq-lead-capture</code></td><td>rateLimiter: { max: 5, duration: 1000 }</td><td>Our custom 5 req/sec throttling</td></tr>
+    <tr><td><code>lsq-bulk-operations</code></td><td>concurrency: 5, per-job result tracking</td><td><code>LsqBulkOperation</code> + <code>LsqBulkOperationResult</code> tables</td></tr>
+    <tr><td><code>email-send</code></td><td>priority: 1-10, immediate</td><td>Direct TCP <code>send-email</code></td></tr>
+    <tr><td><code>email-scheduled</code></td><td>delay: calculated ms until send time</td><td><code>ClientEmailScheduler</code> table</td></tr>
+    <tr><td><code>payment-process</code></td><td>removeDuplicates: by transactionId</td><td>30-second sleep hack</td></tr>
+    <tr><td><code>cron-stale-leads</code></td><td>repeatable: daily</td><td>4:30 AM cron in API Gateway</td></tr>
+  </tbody>
+</table>
+
+<h4>BullMQ Flow for Sibro (replaces staged execution):</h4>
+<pre><code>// Parent-child job dependency — if any child fails, parent fails
+const flow = new FlowProducer(connection);
+await flow.add({
+  name: 'sibro-push-policy',
+  queueName: 'sibro-policy-sync',
+  data: { policyId: 'POL-12345' },
+  children: [
+    {
+      name: 'resolve-client',
+      queueName: 'sibro-policy-sync',
+      data: { policyId: 'POL-12345', stage: 'resolve_client' },
+    },
+    {
+      name: 'create-policy',
+      queueName: 'sibro-policy-sync',
+      data: { policyId: 'POL-12345', stage: 'create_policy' },
+      opts: { depends: ['resolve-client'] },
+    },
+    {
+      name: 'create-premium-txn',
+      queueName: 'sibro-policy-sync',
+      data: { policyId: 'POL-12345', stage: 'create_premium_transaction' },
+      opts: { depends: ['create-policy'] },
+    },
+  ],
+});</code></pre>
+
+<h4>PostgreSQL event log (new table):</h4>
+<pre><code>CREATE TABLE domain_events (
+    id            BIGSERIAL PRIMARY KEY,
+    event_type    VARCHAR(100) NOT NULL,  -- 'policy.created', 'lead.captured'
+    aggregate_id  VARCHAR(100) NOT NULL,  -- 'POL-12345', 'LEAD-678'
+    source        VARCHAR(50)  NOT NULL,  -- 'question-service', 'api-gateway'
+    payload       JSONB        NOT NULL,
+    created_at    TIMESTAMPTZ  DEFAULT NOW(),
+
+    INDEX idx_events_type (event_type),
+    INDEX idx_events_aggregate (aggregate_id),
+    INDEX idx_events_created (created_at)
+);
+
+-- Partition by month for performance
+CREATE TABLE domain_events_2026_04 PARTITION OF domain_events
+    FOR VALUES FROM ('2026-04-01') TO ('2026-05-01');</code></pre>
+
+<h4>Materialized views for cross-service aggregates:</h4>
+<pre><code>CREATE MATERIALIZED VIEW policy_complete_view AS
+SELECT
+    p.id AS policy_id,
+    p.policy_number,
+    p.gross_premium,
+    p.start_date,
+    p.end_date,
+    u.email AS client_email,
+    c.name AS company_name,
+    ls.prospect_id AS lsq_prospect_id,
+    ls.is_converted AS lsq_converted,
+    sct.sibro_policy_id,
+    sct.stage AS sibro_sync_stage
+FROM policy p
+LEFT JOIN "user" u ON p.user_id = u.id
+LEFT JOIN company c ON p.company_id = c.id
+LEFT JOIN lead_square_id_mapping ls ON p.lead_id = ls.lead_id
+LEFT JOIN sibro_client_transactions sct ON p.id = sct.policy_id;</code></pre>
+
+<h4>Tables we can deprecate:</h4>
+<table>
+  <thead><tr><th>Table</th><th>Replaced By</th></tr></thead>
+  <tbody>
+    <tr><td><code>ClientEmailScheduler</code></td><td>BullMQ <code>email-scheduled</code> queue (delayed jobs)</td></tr>
+    <tr><td><code>ClientEmailSchedulerFailures</code></td><td>BullMQ failed jobs + DLQ</td></tr>
+    <tr><td><code>LsqBulkOperation</code></td><td>BullMQ job with status tracking</td></tr>
+    <tr><td><code>LsqBulkOperationResult</code></td><td>BullMQ per-job result (returnvalue)</td></tr>
+  </tbody>
+</table>
+
+<p><strong>Estimated cost:</strong> Redis on ElastiCache ~$30-80/month (cache.t3.small), or self-hosted in Docker (free)</p>
+
+<hr>
+
+<!-- ─── 3.4 ─── -->
+<h3 id="34-hybrid-phased">3.4 Approach 4: Hybrid Phased Approach</h3>
+
+<p>Rather than committing to one architecture upfront, this approach lets us start simple and evolve as our needs grow.</p>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+gantt
+    title Implementation Phases
+    dateFormat  YYYY-MM-DD
+    axisFormat  %b %d
+
+    section Phase 1: Queuing
+    Add Redis + BullMQ to stack       :p1a, 2026-04-07, 5d
+    Migrate email sending to queue     :p1b, after p1a, 5d
+    Migrate Sibro sync to queue        :p1c, after p1a, 7d
+    Migrate LSQ operations to queue    :p1d, after p1b, 7d
+    Replace cron jobs with repeatable  :p1e, after p1c, 3d
+
+    section Phase 2: Source of Truth
+    Create domain_events table         :p2a, after p1e, 3d
+    Add event publishing to services   :p2b, after p2a, 10d
+    Build materialized views           :p2c, after p2b, 5d
+    Deprecate custom tracking tables   :p2d, after p2c, 5d
+
+    section Phase 3: Data Pipelines
+    Set up Debezium CDC                :p3a, after p2d, 7d
+    S3 sink for event archive          :p3b, after p3a, 5d
+    Replace Google Sheets reporting    :p3c, after p3b, 10d
+    BI dashboard setup                 :p3d, after p3c, 7d
+  </pre>
+</div>
+
+<h4>Phase 1 &mdash; Queuing &amp; Relaying (Weeks 1-4)</h4>
+<p>The goal here is to get reliable async operations with retry and visibility. This phase alone eliminates the most painful issues we have today.</p>
+<table>
+  <thead><tr><th>Task</th><th>Effort</th><th>Impact</th></tr></thead>
+  <tbody>
+    <tr><td>Add Redis to docker-compose + ElastiCache for prod</td><td>1 day</td><td>Foundation for everything else</td></tr>
+    <tr><td>Install <code>@nestjs/bullmq</code>, set up Bull Board dashboard</td><td>1 day</td><td>Immediate visibility into all async jobs</td></tr>
+    <tr><td>Migrate email sending (Email Service)</td><td>3 days</td><td>Reliable delivery, priority queues</td></tr>
+    <tr><td>Migrate Sibro policy push (Question Service)</td><td>5 days</td><td>Staged execution with auto-retry</td></tr>
+    <tr><td>Migrate LSQ lead creation + bulk ops (API Gateway)</td><td>5 days</td><td>Rate limiting built-in, deprecate <code>LsqBulkOperation</code> tables</td></tr>
+    <tr><td>Replace 4:30 AM cron with BullMQ repeatable jobs</td><td>2 days</td><td>Granular scheduling, per-job failure handling</td></tr>
+    <tr><td>Replace 30-second payment sleep with queue</td><td>1 day</td><td>Event-driven payment processing</td></tr>
+  </tbody>
+</table>
+
+<h4>Phase 2 &mdash; Source of Truth (Weeks 5-8)</h4>
+<p>The goal here is to make PostgreSQL the authoritative event log with cross-service views.</p>
+<table>
+  <thead><tr><th>Task</th><th>Effort</th><th>Impact</th></tr></thead>
+  <tbody>
+    <tr><td>Create <code>domain_events</code> table (partitioned by month)</td><td>1 day</td><td>Audit trail foundation</td></tr>
+    <tr><td>Add event publishing middleware to all NestJS services</td><td>5 days</td><td>Every state change gets logged</td></tr>
+    <tr><td>Build <code>policy_complete_view</code> materialized view</td><td>2 days</td><td>Unified policy + lead + Sibro + LSQ view</td></tr>
+    <tr><td>Build <code>lead_funnel_view</code> materialized view</td><td>2 days</td><td>Lead &rarr; OTP &rarr; Quote &rarr; Policy conversion</td></tr>
+    <tr><td>Set up pg_cron for materialized view refresh</td><td>1 day</td><td>Auto-refresh views on schedule</td></tr>
+    <tr><td>Deprecate <code>ClientEmailScheduler*</code> tables</td><td>2 days</td><td>Cleanup</td></tr>
+    <tr><td>Deprecate <code>LsqBulkOperation*</code> tables</td><td>2 days</td><td>Cleanup</td></tr>
+  </tbody>
+</table>
+
+<h4>Phase 3 &mdash; Data Pipelines (Weeks 9-12)</h4>
+<p>The goal here is real-time data flow from PostgreSQL to an analytics layer.</p>
+<table>
+  <thead><tr><th>Task</th><th>Effort</th><th>Impact</th></tr></thead>
+  <tbody>
+    <tr><td>Set up Debezium CDC (PostgreSQL &rarr; Kafka/Redpanda)</td><td>5 days</td><td>Real-time change capture</td></tr>
+    <tr><td>Configure S3 sink connector</td><td>3 days</td><td>Event archive in our data lake</td></tr>
+    <tr><td>Set up Athena / Redshift for analytics queries</td><td>3 days</td><td>Replace ad-hoc Google Sheets</td></tr>
+    <tr><td>Build BI dashboards (Metabase / Superset)</td><td>5 days</td><td>Replace POS Reporting Google Sheets</td></tr>
+    <tr><td>Backfill historical events from existing tables</td><td>3 days</td><td>Complete timeline from day one</td></tr>
+  </tbody>
+</table>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="4-comparison-matrix">4. Comparison Matrix</h2>
+
+<p>Here's how all four approaches stack up across the criteria that matter to us:</p>
+
+<table>
+  <thead>
+    <tr><th>Criteria</th><th>AWS Managed (3.1)</th><th>Kafka/Redpanda (3.2)</th><th>BullMQ + PG (3.3)</th><th>Hybrid (3.4)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Implementation effort</strong></td><td>Medium</td><td>High</td><td>Low</td><td>Low &rarr; Medium</td></tr>
+    <tr><td><strong>Ops overhead</strong></td><td>Very Low</td><td>High (self) / Low (managed)</td><td>Low</td><td>Low &rarr; Medium</td></tr>
+    <tr><td><strong>NestJS compatibility</strong></td><td>SDK needed</td><td>kafkajs library</td><td>First-class (<code>@nestjs/bullmq</code>)</td><td>First-class</td></tr>
+    <tr><td><strong>Event replay</strong></td><td>Yes (EB archive)</td><td>Yes (native)</td><td>Partial (PG event log)</td><td>Evolves to full</td></tr>
+    <tr><td><strong>Queuing &amp; retry</strong></td><td>Yes (SQS + DLQ)</td><td>Yes (consumer offsets)</td><td>Yes (BullMQ native)</td><td>Yes</td></tr>
+    <tr><td><strong>Rate limiting</strong></td><td>Manual</td><td>Consumer-side</td><td>Native BullMQ</td><td>Native</td></tr>
+    <tr><td><strong>Data pipeline</strong></td><td>S3 + Athena</td><td>Kafka Connect</td><td>Manual ETL</td><td>CDC in Phase 3</td></tr>
+    <tr><td><strong>Team learning curve</strong></td><td>Medium</td><td>High</td><td>Low</td><td>Low &rarr; Medium</td></tr>
+    <tr><td><strong>Monthly cost (est.)</strong></td><td>$50-200</td><td>$200-600</td><td>$30-80</td><td>$30 &rarr; $300</td></tr>
+    <tr><td><strong>Vendor lock-in</strong></td><td>High (AWS)</td><td>Low (open source)</td><td>Low (Redis)</td><td>Low</td></tr>
+    <tr><td><strong>Scales to 100K events/day</strong></td><td>Yes</td><td>Yes</td><td>Yes (Redis Cluster)</td><td>Yes</td></tr>
+    <tr><td><strong>Scales to 10M events/day</strong></td><td>Yes</td><td>Yes</td><td>Needs Kafka migration</td><td>Yes (Phase 3)</td></tr>
+  </tbody>
+</table>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="5-kafka-deep-dive">5. Deep Dive: Kafka/Redpanda Architecture for BimaKavach</h2>
+
+<p>This section walks through exactly how a Kafka-based architecture would work for our platform &mdash; every topic, every event, every consumer mapped to our actual flows. Whether we adopt Kafka from day one or evolve into it from BullMQ (Phase 3 of the hybrid approach), this is the target-state architecture.</p>
+
+<!-- ─── 5.1 ─── -->
+<h3 id="51-why-kafka">5.1 Why Kafka Deserves a Closer Look</h3>
+
+<p>Our platform has a specific data characteristic that makes Kafka particularly interesting: <strong>every policy event needs to fan out to multiple independent systems</strong>. When a policy is created, we need to simultaneously:</p>
+
+<ol>
+  <li>Record it in Sibro (regulatory compliance)</li>
+  <li>Log it as an activity in LeadSquared (CRM)</li>
+  <li>Send confirmation emails to the client and ops team (communication)</li>
+  <li>Create cross-sell/renewal opportunities in LeadSquared (sales pipeline)</li>
+  <li>Log the event for audit/analytics (data platform)</li>
+</ol>
+
+<p>Today, our Question Service handles all of this sequentially in a single function call. If Sibro fails, the email might still go out &mdash; or it might not, depending on where the failure happens. There's no consistency guarantee, and there's no way for a new consumer (say, a future analytics service) to tap into this flow without modifying the Question Service.</p>
+
+<div class="callout">With Kafka, we publish <code>policy.created</code> once, and each of these concerns consumes independently.</div>
+
+<!-- ─── 5.2 ─── -->
+<h3 id="52-cluster-architecture">5.2 Cluster Architecture</h3>
+
+<p>For our scale and AWS setup, here's what the cluster looks like:</p>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+graph TB
+    subgraph "AWS ap-south-1"
+        subgraph "Kafka Cluster (MSK or Redpanda)"
+            B1["Broker 1&lt;br/&gt;AZ: ap-south-1a"]
+            B2["Broker 2&lt;br/&gt;AZ: ap-south-1b"]
+            B3["Broker 3&lt;br/&gt;AZ: ap-south-1c"]
+        end
+
+        subgraph "Kafka Connect Cluster"
+            KC1["Connect Worker 1&lt;br/&gt;Debezium (PG CDC)"]
+            KC2["Connect Worker 2&lt;br/&gt;S3 Sink"]
+        end
+
+        subgraph "Schema Registry"
+            SR["Schema Registry&lt;br/&gt;(Avro/JSON Schema)"]
+        end
+
+        subgraph "Our NestJS Services"
+            GW["API Gateway :3005&lt;br/&gt;(Producer + Consumer)"]
+            QS["Question :3007&lt;br/&gt;(Producer + Consumer)"]
+            ES["Email :3008&lt;br/&gt;(Consumer)"]
+            PF["Proposal :3009&lt;br/&gt;(Producer + Consumer)"]
+            CS["Common :3006&lt;br/&gt;(Producer)"]
+            POS["POS :3011&lt;br/&gt;(Producer + Consumer)"]
+        end
+
+        RDS["PostgreSQL RDS"]
+        S3_LAKE["S3 Data Lake&lt;br/&gt;s3://bk-events/"]
+    end
+
+    GW &amp; QS &amp; ES &amp; PF &amp; CS &amp; POS --> B1 &amp; B2 &amp; B3
+    B1 &amp; B2 &amp; B3 --> GW &amp; QS &amp; ES &amp; PF &amp; POS
+
+    KC1 -->|"CDC"| RDS
+    KC1 -->|"produce"| B1
+    KC2 -->|"consume"| B2
+    KC2 -->|"write"| S3_LAKE
+
+    GW &amp; QS &amp; ES &amp; PF &amp; CS &amp; POS --> SR
+  </pre>
+</div>
+
+<h4>MSK vs Redpanda &mdash; our recommendation within Kafka:</h4>
+
+<p>For our team size and ops bandwidth, <strong>Redpanda on ECS</strong> or <strong>Redpanda Cloud</strong> is the better fit:</p>
+
+<table>
+  <thead><tr><th>Factor</th><th>AWS MSK</th><th>Redpanda (self-hosted)</th><th>Redpanda Cloud</th></tr></thead>
+  <tbody>
+    <tr><td>Minimum cost</td><td>~$300/month (3 brokers)</td><td>~$100/month (3 containers)</td><td>~$200/month</td></tr>
+    <tr><td>Ops burden</td><td>Low (managed)</td><td>Medium (we run containers)</td><td>Very Low</td></tr>
+    <tr><td>Kafka compatibility</td><td>Native</td><td>Full API compatible</td><td>Full API compatible</td></tr>
+    <tr><td>Schema Registry</td><td>Glue Schema Registry</td><td>Built-in</td><td>Built-in</td></tr>
+    <tr><td>Console / UI</td><td>CloudWatch metrics</td><td>Redpanda Console (built-in)</td><td>Redpanda Console</td></tr>
+    <tr><td>JVM tuning needed</td><td>Yes (under the hood)</td><td>No (C++, single binary)</td><td>No</td></tr>
+    <tr><td>Our NestJS integration</td><td>kafkajs library</td><td>Same kafkajs library</td><td>Same kafkajs library</td></tr>
+  </tbody>
+</table>
+
+<!-- ─── 5.3 ─── -->
+<h3 id="53-topic-design">5.3 Complete Topic Design</h3>
+
+<p>Here's every topic we'd need, mapped to our actual domain:</p>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+graph LR
+    subgraph "Domain Events (facts that happened)"
+        T1["policy.events"]
+        T2["lead.events"]
+        T3["payment.events"]
+        T4["quote.events"]
+        T5["proposal.events"]
+        T6["claim.events"]
+        T7["user.events"]
+        T8["pos.events"]
+    end
+
+    subgraph "Commands (requests to do something)"
+        T9["email.commands"]
+        T10["sibro.commands"]
+        T11["lsq.commands"]
+        T12["notification.commands"]
+    end
+
+    subgraph "System Topics"
+        T13["audit.log"]
+        T14["dead-letter"]
+        T15["cdc.postgres.public"]
+    end
+  </pre>
+</div>
+
+<h4>Detailed topic specifications:</h4>
+<table>
+  <thead><tr><th>Topic</th><th>Partition Key</th><th>Partitions</th><th>Retention</th><th>Producers</th><th>Consumers</th></tr></thead>
+  <tbody>
+    <tr><td><code>policy.events</code></td><td>policyId</td><td>6</td><td>90 days</td><td>Question Svc, Gateway</td><td>Sibro, LSQ, Email, Analytics</td></tr>
+    <tr><td><code>lead.events</code></td><td>leadId</td><td>6</td><td>90 days</td><td>Gateway, Question Svc</td><td>LSQ, Analytics, Cron Worker</td></tr>
+    <tr><td><code>payment.events</code></td><td>transactionId</td><td>3</td><td>30 days</td><td>Gateway</td><td>Question Svc, LSQ, Email</td></tr>
+    <tr><td><code>quote.events</code></td><td>quoteId</td><td>3</td><td>14 days</td><td>Question Svc</td><td>LSQ, Analytics</td></tr>
+    <tr><td><code>proposal.events</code></td><td>proposalId</td><td>3</td><td>30 days</td><td>Proposal Svc</td><td>Email, Question Svc, Analytics</td></tr>
+    <tr><td><code>claim.events</code></td><td>claimId</td><td>3</td><td>90 days</td><td>Question Svc, POS</td><td>Email, Analytics</td></tr>
+    <tr><td><code>email.commands</code></td><td>recipientEmail</td><td>3</td><td>7 days</td><td>Any service</td><td>Email Worker</td></tr>
+    <tr><td><code>sibro.commands</code></td><td>policyId</td><td>3</td><td>14 days</td><td>Question Svc</td><td>Sibro Worker</td></tr>
+    <tr><td><code>lsq.commands</code></td><td>leadId</td><td>3</td><td>14 days</td><td>Gateway, Question Svc</td><td>LSQ Worker</td></tr>
+    <tr><td><code>notification.commands</code></td><td>userId</td><td>3</td><td>7 days</td><td>Any service</td><td>POS Notification Worker</td></tr>
+    <tr><td><code>audit.log</code></td><td>source</td><td>6</td><td>365 days</td><td>All services</td><td>S3 Sink, Analytics</td></tr>
+    <tr><td><code>dead-letter</code></td><td>originalTopic</td><td>3</td><td>30 days</td><td>Any consumer (on failure)</td><td>Alert Worker</td></tr>
+    <tr><td><code>cdc.postgres.public.*</code></td><td>table PK</td><td>auto</td><td>7 days</td><td>Debezium</td><td>Analytics, Data Lake</td></tr>
+  </tbody>
+</table>
+
+<!-- ─── 5.4 ─── -->
+<h3 id="54-event-schema">5.4 Event Schema Design</h3>
+
+<p>We'd use a standardized envelope for all events. This gives us consistency across services and makes consumers' lives easier.</p>
+
+<h4>Base event envelope:</h4>
+<pre><code>// shared/events/base-event.ts
+interface BimaKavachEvent&lt;T = unknown&gt; {
+  // Metadata
+  eventId: string;          // UUID v4 — globally unique
+  eventType: string;        // e.g., 'policy.created', 'lead.captured'
+  eventVersion: number;     // schema version for evolution (start at 1)
+  source: string;           // e.g., 'question-service', 'api-gateway'
+  timestamp: string;        // ISO 8601 UTC
+
+  // Correlation
+  correlationId: string;    // trace ID across services
+  causationId?: string;     // eventId of the event that caused this one
+
+  // Domain
+  aggregateType: string;    // 'policy', 'lead', 'quote', etc.
+  aggregateId: string;      // the entity ID
+  payload: T;               // the actual event data
+
+  // Context
+  userId?: number;          // who triggered this (if user-initiated)
+  companyId?: number;       // which company context
+}</code></pre>
+
+<h4>Key domain event payloads:</h4>
+<pre><code>// ─── Policy Events ───────────────────────────────────
+
+interface PolicyCreatedPayload {
+  policyNumber: string;
+  productId: number;
+  productName: string;
+  insurerId: number;
+  insurerName: string;
+  companyId: number;
+  companyName: string;
+  userId: number;
+  grossPremium: number;
+  netPremium: number;
+  startDate: string;
+  endDate: string;
+  paymentMode: string;
+  leadSquareId?: number;
+  prospectId?: string;        // LSQ prospect ID
+  source: 'online' | 'offline' | 'pos' | 'renewal';
+}
+
+interface PolicyExpiredPayload {
+  policyNumber: string;
+  productId: number;
+  companyId: number;
+  userId: number;
+  expiryDate: string;
+  daysUntilExpiry: number;    // 60, 21, 14, 7, 1, 0, or negative
+  renewalEligible: boolean;
+}
+
+// ─── Lead Events ─────────────────────────────────────
+
+interface LeadCapturedPayload {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  company: string;
+  productId: number;
+  productName: string;
+  leadSource: 'Online' | 'Offline' | 'Bulk-Upload' | 'Lead-Square'
+            | 'Recommendations' | 'Partner-Lead';
+  otpVerified: boolean;
+  customFields: Record&lt;string, unknown&gt;;  // mx_* fields for LSQ
+}
+
+// ─── Payment Events ──────────────────────────────────
+
+interface PaymentCompletedPayload {
+  transactionId: string;
+  prospectId: string;
+  amount: number;
+  paymentGateway: 'future-generali' | 'chola' | 'magma' | 'cashfree';
+  paymentMode: string;
+  isRenewal: boolean;
+  opportunityId?: string;
+}
+
+// ─── Sibro Command Events ────────────────────────────
+
+interface SibroPushPolicyCommand {
+  policyId: number;
+  policyNumber: string;
+  companyId: number;
+  userId: number;
+  productId: number;
+  insurerId: number;
+  grossPremium: number;
+  startDate: string;
+  sibroProductId?: number;
+  sibroInsurerId?: number;
+  sibroCrmUserId?: number;
+  sibroBusinessOwnerId?: number;
+}</code></pre>
+
+<!-- ─── 5.5 ─── -->
+<h3 id="55-consumer-groups">5.5 Consumer Groups &mdash; Who Consumes What</h3>
+
+<p>This is the core of the architecture. Each consumer group processes events independently, at its own pace, with its own failure handling.</p>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+graph TB
+    subgraph "Events Published"
+        PE["policy.created"]
+        LE["lead.captured"]
+        PAY["payment.completed"]
+        PFE["proposal.form.completed"]
+        EXP["policy.expired"]
+    end
+
+    subgraph "Consumer Group: sibro-sync"
+        SW["Sibro Worker&lt;br/&gt;(Question Service)"]
+        SW_DLQ["DLQ: sibro failures"]
+    end
+
+    subgraph "Consumer Group: lsq-sync"
+        LW["LSQ Worker&lt;br/&gt;(API Gateway)"]
+        LW_DLQ["DLQ: LSQ failures"]
+    end
+
+    subgraph "Consumer Group: email-sender"
+        EW["Email Worker&lt;br/&gt;(Email Service)"]
+        EW_DLQ["DLQ: email failures"]
+    end
+
+    subgraph "Consumer Group: analytics"
+        AW["Analytics Worker&lt;br/&gt;(S3 Sink + aggregation)"]
+    end
+
+    PE -->|"push policy"| SW
+    PE -->|"log activity"| LW
+    PE -->|"send confirmation"| EW
+    PE -->|"record"| AW
+
+    LE -->|"create lead"| LW
+    LE -->|"record"| AW
+
+    PAY -->|"create policy"| SW
+    PAY -->|"update lead"| LW
+    PAY -->|"send receipt"| EW
+    PAY -->|"record"| AW
+
+    PFE -->|"send notification"| EW
+    PFE -->|"record"| AW
+
+    EXP -->|"send reminder"| EW
+    EXP -->|"create renewal opp"| LW
+    EXP -->|"record"| AW
+
+    SW -.->|"on failure"| SW_DLQ
+    LW -.->|"on failure"| LW_DLQ
+    EW -.->|"on failure"| EW_DLQ
+  </pre>
+</div>
+
+<h4>Consumer Group: <code>sibro-sync</code></h4>
+<p>This replaces our current staged execution in the Question Service.</p>
+<table>
+  <thead><tr><th>Config</th><th>Value</th></tr></thead>
+  <tbody>
+    <tr><td>Subscribes to</td><td><code>policy.events</code> (type: <code>policy.created</code>), <code>sibro.commands</code></td></tr>
+    <tr><td>Concurrency</td><td>1 per partition (ordered processing per policy)</td></tr>
+    <tr><td>Retry strategy</td><td>3 attempts, exponential backoff (1s, 5s, 30s)</td></tr>
+    <tr><td>DLQ topic</td><td><code>dead-letter</code> with <code>originalTopic: sibro.commands</code></td></tr>
+    <tr><td>Idempotency</td><td>Check <code>sibro_client_transactions</code> before processing</td></tr>
+  </tbody>
+</table>
+
+<h4>Processing flow for <code>policy.created</code>:</h4>
+<div class="flow-text">policy.created event received
+    │
+    ├─ 1. Check feature flag (SEND_POLICY_TO_SIBRO)
+    │     └─ disabled? → commit offset, skip
+    │
+    ├─ 2. Resolve Sibro client
+    │     ├─ Search by PAN
+    │     ├─ Search by GST-extracted PAN
+    │     ├─ Search by email
+    │     └─ Search by phone
+    │     └─ 0 matches? → Create client in Sibro
+    │     └─ 2+ matches? → Publish 'sibro.client.ambiguous' event
+    │
+    ├─ 3. POST /add-policy to Sibro
+    │     └─ Map our IDs → Sibro IDs using mapping tables
+    │
+    ├─ 4. POST /add-premium-transaction/{sibroPolicyId}
+    │
+    ├─ 5. Save to sibro_client_transactions
+    │
+    └─ 6. Commit offset ✓
+
+    On failure at any stage:
+    └─ Don't commit offset → Kafka redelivers automatically
+    └─ After 3 failures → send to dead-letter topic
+    └─ Alert Worker picks up DLQ → sends email to admin</div>
+
+<h4>Consumer Group: <code>lsq-sync</code></h4>
+<p>This replaces our scattered LeadSquared API calls across Gateway and Question Service.</p>
+<table>
+  <thead><tr><th>Config</th><th>Value</th></tr></thead>
+  <tbody>
+    <tr><td>Subscribes to</td><td><code>lead.events</code>, <code>policy.events</code>, <code>quote.events</code>, <code>lsq.commands</code></td></tr>
+    <tr><td>Concurrency</td><td>5 (rate limited to LSQ API limits)</td></tr>
+    <tr><td>Retry strategy</td><td>5 attempts, exponential backoff (2s, 10s, 60s, 300s, 900s)</td></tr>
+    <tr><td>Rate limiting</td><td>5 requests/second to LeadSquared API</td></tr>
+    <tr><td>DLQ topic</td><td><code>dead-letter</code> with <code>originalTopic: lsq.commands</code></td></tr>
+  </tbody>
+</table>
+
+<h4>Event-to-action mapping (LSQ):</h4>
+<table>
+  <thead><tr><th>Event</th><th>LSQ API Called</th><th>What It Does</th></tr></thead>
+  <tbody>
+    <tr><td><code>lead.captured</code></td><td><code>Lead.Capture</code></td><td>Create/update lead with core + custom (mx_*) fields</td></tr>
+    <tr><td><code>lead.captured</code> (product-specific)</td><td><code>Lead.Capture</code></td><td>Add product-specific fields (CPM, EAR, CAR, etc.)</td></tr>
+    <tr><td><code>quote.generated</code></td><td><code>ProspectActivity.Create</code></td><td>Log quote activity with premium details</td></tr>
+    <tr><td><code>policy.created</code></td><td><code>ProspectActivity.Create</code></td><td>Log policy purchase activity</td></tr>
+    <tr><td><code>policy.created</code></td><td><code>Opportunity.Create</code></td><td>Create cross-sell + renewal opportunities</td></tr>
+    <tr><td><code>policy.expired</code></td><td><code>ProspectActivity.Create</code></td><td>Create reminder activity for sales dashboard</td></tr>
+    <tr><td><code>lead.stale</code></td><td><code>ProspectActivity.Create</code></td><td>Create follow-up reminder activity</td></tr>
+    <tr><td>Bulk CSV command</td><td><code>Lead.Capture</code> / <code>ProspectActivity.Create</code></td><td>Process at 5 req/sec</td></tr>
+  </tbody>
+</table>
+
+<h4>Consumer Group: <code>email-sender</code></h4>
+<table>
+  <thead><tr><th>Config</th><th>Value</th></tr></thead>
+  <tbody>
+    <tr><td>Subscribes to</td><td><code>email.commands</code>, <code>policy.events</code>, <code>proposal.events</code>, <code>lead.events</code></td></tr>
+    <tr><td>Concurrency</td><td>10 (SendGrid handles volume well)</td></tr>
+    <tr><td>Retry strategy</td><td>3 attempts, fixed 30s backoff</td></tr>
+    <tr><td>Priority</td><td>Policy confirmations (high) > reminders (medium) > marketing (low)</td></tr>
+  </tbody>
+</table>
+
+<h4>Event-to-email mapping:</h4>
+<table>
+  <thead><tr><th>Event</th><th>Email Template</th><th>Recipients</th></tr></thead>
+  <tbody>
+    <tr><td><code>policy.created</code></td><td>Policy confirmation</td><td>Client + ops team</td></tr>
+    <tr><td><code>policy.expired</code> (60 days)</td><td>Early renewal reminder</td><td>Client</td></tr>
+    <tr><td><code>policy.expired</code> (21 days)</td><td>Renewal reminder</td><td>Client + CS team</td></tr>
+    <tr><td><code>policy.expired</code> (14/7/1 days)</td><td>Urgent renewal reminder</td><td>Client + CS team + sales head</td></tr>
+    <tr><td><code>proposal.form.initiated</code></td><td>Proposal form link</td><td>Client</td></tr>
+    <tr><td><code>proposal.form.stale</code></td><td>Proposal form reminder</td><td>Client</td></tr>
+    <tr><td><code>lead.stale</code></td><td>Re-engagement email</td><td>Client</td></tr>
+    <tr><td><code>sibro.push.failed</code> (from DLQ)</td><td>Sibro failure alert</td><td>Admin</td></tr>
+  </tbody>
+</table>
+
+<!-- ─── 5.6 ─── -->
+<h3 id="56-flow-changes">5.6 How Our Current Flows Change</h3>
+
+<p>Let's walk through our three most critical flows and see exactly how they transform.</p>
+
+<h4>Flow 1: Payment &rarr; Policy Creation (replaces the 30-second sleep)</h4>
+
+<p><strong>Today:</strong></p>
+<div class="flow-text">LSQ webhook hits /lead-square/byId/:id
+    → sleep(30000)  // wait 30 seconds
+    → fetch lead from LSQ
+    → create policy in DB
+    → (sequentially) update LSQ activity
+    → (sequentially) create LSQ opportunities
+    → (sequentially) push to Sibro
+    → (sequentially) send confirmation emails
+
+If anything fails midway → partial state, manual cleanup</div>
+
+<p><strong>With Kafka:</strong></p>
+<div class="flow-text">LSQ webhook hits /lead-square/byId/:id
+    → Gateway publishes: payment.completed { prospectId, amount, gateway }
+    → returns 202 Accepted immediately
+
+    ┌─ Consumer: question-service (policy-creator group)
+    │  → Fetch lead from LSQ (or from local cache)
+    │  → Create policy in DB
+    │  → Publish: policy.created { ...all details }
+    │
+    ├─ Consumer: sibro-sync
+    │  → Resolve client, push policy, push premium txn
+    │  → (independent, retries on its own)
+    │
+    ├─ Consumer: lsq-sync
+    │  → Update activity, create opportunities
+    │  → (independent, rate-limited)
+    │
+    └─ Consumer: email-sender
+       → Send confirmation to client + ops
+       → (independent, retries on its own)
+
+Each consumer succeeds or fails independently.
+Sibro being down doesn't block the email.
+LSQ rate limiting doesn't delay the policy creation.</div>
+
+<h4>Flow 2: Stale Lead Processing (replaces 4:30 AM cron)</h4>
+
+<p><strong>Today:</strong></p>
+<div class="flow-text">Cron fires at 4:30 AM IST
+    → Query DB for leads older than 45 days with isConverted = false
+    → For each lead:
+        → Call LSQ API to create reminder activity
+        → If fails → log error, move to next
+
+If cron fails at lead #50 out of 200 → remaining 150 skipped until tomorrow</div>
+
+<p><strong>With Kafka:</strong></p>
+<div class="flow-text">Scheduled producer runs at 4:30 AM
+    → Queries DB for stale leads
+    → Publishes lead.stale event for EACH lead individually to Kafka
+    → lsq-sync consumer processes each independently
+    → If consumer fails on lead #50 → Kafka retries #50,
+      continues processing #51-200 in parallel
+
+No single point of failure. Each lead is an independent message.</div>
+
+<h4>Flow 3: Sibro Policy Push (replaces staged execution + error emails)</h4>
+
+<p><strong>Today:</strong></p>
+<div class="flow-text">Policy created → Question Service calls Sibro directly:
+    Stage 1: resolve_client  → if fails → email admin, stop
+    Stage 2: create_policy   → if fails → email admin, stop
+    Stage 3: create_premium  → if fails → email admin, stop
+    Stage 4: save_transaction → if fails → email admin, stop
+
+Admin receives email → manually investigates → manually retriggers
+No record of which policies are pending/succeeded/failed</div>
+
+<p><strong>With Kafka:</strong></p>
+<div class="flow-text">policy.created event published
+    │
+    ▼
+sibro-sync consumer picks it up
+    │
+    ├─ Stage 1: resolve_client
+    │     fail? → don't commit offset → Kafka retries in 1s
+    │     fail 3x? → send to dead-letter, commit offset
+    │
+    ├─ Stage 2: create_policy (only if Stage 1 succeeded)
+    │     fail? → don't commit offset → Kafka retries in 5s
+    │     fail 3x? → send to dead-letter
+    │
+    ├─ Stage 3: create_premium_transaction
+    │     fail? → don't commit offset → Kafka retries in 30s
+    │     fail 3x? → send to dead-letter
+    │
+    └─ Stage 4: save to sibro_client_transactions
+          ✓ commit offset
+
+Dead letter consumer:
+    → Sends the same admin email as today
+    → BUT: the message is preserved in the DLQ topic
+    → Admin can inspect, fix the issue, and replay from DLQ
+
+Visibility:
+    → Consumer lag = "12 policies pending Sibro sync"
+    → DLQ depth = "3 policies failed Sibro sync"</div>
+
+<!-- ─── 5.7 ─── -->
+<h3 id="57-cdc-debezium">5.7 Change Data Capture (CDC) with Debezium</h3>
+
+<p>This is how we get data from our existing PostgreSQL tables into Kafka without changing any application code. Debezium watches the PostgreSQL WAL (write-ahead log) and publishes every INSERT/UPDATE/DELETE as a Kafka event.</p>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+graph LR
+    subgraph "PostgreSQL RDS"
+        WAL["WAL (Write-Ahead Log)"]
+        T_POLICY["policy table"]
+        T_USER["user table"]
+        T_COMPANY["company table"]
+        T_LEAD["lead_square table"]
+    end
+
+    subgraph "Debezium Connector"
+        DEB["Debezium PostgreSQL&lt;br/&gt;Connector"]
+    end
+
+    subgraph "Kafka Topics (auto-created)"
+        CDC1["cdc.postgres.public.policy"]
+        CDC2["cdc.postgres.public.user"]
+        CDC3["cdc.postgres.public.company"]
+        CDC4["cdc.postgres.public.lead_square"]
+    end
+
+    subgraph "Consumers"
+        ANALYTICS["Analytics Pipeline&lt;br/&gt;(S3 + Athena)"]
+        SEARCH["Future: Search Index&lt;br/&gt;(Elasticsearch)"]
+        CACHE["Future: Cache Invalidation&lt;br/&gt;(Redis)"]
+    end
+
+    T_POLICY &amp; T_USER &amp; T_COMPANY &amp; T_LEAD --> WAL
+    WAL --> DEB
+    DEB --> CDC1 &amp; CDC2 &amp; CDC3 &amp; CDC4
+    CDC1 &amp; CDC2 &amp; CDC3 &amp; CDC4 --> ANALYTICS &amp; SEARCH &amp; CACHE
+  </pre>
+</div>
+
+<p><strong>What this gives us:</strong></p>
+<ul>
+  <li>Every database change automatically shows up in Kafka &mdash; no application code changes</li>
+  <li>We can build a complete data lake by sinking CDC topics to S3</li>
+  <li>Future capabilities (search, cache invalidation, read replicas) can tap in without modifying our services</li>
+  <li>Historical replay &mdash; we can rebuild any downstream system from the CDC log</li>
+</ul>
+
+<h4>Debezium connector configuration:</h4>
+<pre><code>{
+  "name": "bk-postgres-cdc",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "bk-production.xxxxx.ap-south-1.rds.amazonaws.com",
+    "database.port": "5432",
+    "database.dbname": "bimakavach",
+    "database.server.name": "bk-prod",
+    "plugin.name": "pgoutput",
+    "publication.name": "bk_cdc_publication",
+
+    "table.include.list": "public.policy,public.user,public.company,
+        public.lead_square,public.quote,public.claim,
+        public.proposal_form,public.sibro_client_transactions",
+
+    "topic.prefix": "cdc.postgres",
+    "snapshot.mode": "initial",
+    "slot.name": "bk_debezium_slot",
+    "heartbeat.interval.ms": 10000
+  }
+}</code></pre>
+
+<p><strong>RDS prerequisites:</strong> Enable <code>rds.logical_replication</code> parameter (set to 1), create a replication slot and publication. No application code changes required.</p>
+
+<!-- ─── 5.8 ─── -->
+<h3 id="58-data-lake">5.8 Data Lake &amp; Analytics Pipeline</h3>
+
+<p>Once we have events flowing through Kafka (both application events and CDC), we can build a proper data pipeline that replaces our current Google Sheets reporting.</p>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+graph TB
+    subgraph "Kafka"
+        AUDIT["audit.log"]
+        CDC["cdc.postgres.*"]
+    end
+
+    subgraph "S3 Data Lake"
+        RAW["raw/&lt;br/&gt;events + cdc (Parquet)"]
+        PROCESSED["processed/&lt;br/&gt;aggregated views"]
+    end
+
+    subgraph "Query Layer"
+        ATHENA["Amazon Athena&lt;br/&gt;(ad-hoc SQL queries)"]
+        GLUE["AWS Glue Catalog&lt;br/&gt;(table definitions)"]
+    end
+
+    subgraph "BI Layer"
+        METABASE["Metabase / Superset&lt;br/&gt;(dashboards)"]
+    end
+
+    AUDIT -->|"S3 Sink Connector&lt;br/&gt;(Parquet, hourly)"| RAW
+    CDC -->|"S3 Sink Connector&lt;br/&gt;(Parquet, hourly)"| RAW
+    RAW -->|"Glue ETL Job&lt;br/&gt;(daily)"| PROCESSED
+    RAW --> GLUE
+    PROCESSED --> GLUE
+    GLUE --> ATHENA
+    ATHENA --> METABASE
+  </pre>
+</div>
+
+<h4>Dashboards this enables (replacing Google Sheets):</h4>
+<table>
+  <thead><tr><th>Dashboard</th><th>Data Source</th><th>Replaces</th></tr></thead>
+  <tbody>
+    <tr><td>Policy Funnel</td><td><code>lead.events</code> &rarr; <code>quote.events</code> &rarr; <code>policy.events</code></td><td>Manual tracking</td></tr>
+    <tr><td>Revenue by Product/Insurer</td><td><code>policy.events</code> aggregated</td><td>Admin panel stats</td></tr>
+    <tr><td>Sibro Sync Health</td><td><code>sibro.commands</code> + DLQ depth</td><td>Error emails</td></tr>
+    <tr><td>LSQ Sync Health</td><td><code>lsq.commands</code> + DLQ depth</td><td>Error emails</td></tr>
+    <tr><td>Email Delivery Rate</td><td><code>email.commands</code> + delivery events</td><td><code>ClientEmailScheduler</code> queries</td></tr>
+    <tr><td>POS Agent Performance</td><td><code>pos.events</code> + <code>policy.events</code></td><td>Google Sheets POS Reporting</td></tr>
+    <tr><td>Lead Conversion Time</td><td><code>lead.events</code> &rarr; <code>policy.events</code> time delta</td><td>Manual calculation</td></tr>
+  </tbody>
+</table>
+
+<!-- ─── 5.9 ─── -->
+<h3 id="59-nestjs-integration">5.9 NestJS Integration</h3>
+
+<p>Here's how our services would actually integrate with Kafka. NestJS has built-in Kafka transport support, so the code changes are contained.</p>
+
+<h4>Module setup:</h4>
+<pre><code>// shared/kafka/kafka.module.ts
+import { Module } from '@nestjs/common';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+
+@Module({
+  imports: [
+    ClientsModule.register([{
+      name: 'KAFKA_SERVICE',
+      transport: Transport.KAFKA,
+      options: {
+        client: {
+          clientId: 'bk-api-gateway',
+          brokers: process.env.KAFKA_BROKERS.split(','),
+          ssl: true,
+          sasl: {
+            mechanism: 'scram-sha-256',
+            username: process.env.KAFKA_USERNAME,
+            password: process.env.KAFKA_PASSWORD,
+          },
+        },
+        producer: {
+          allowAutoTopicCreation: false,
+          idempotent: true,
+        },
+        consumer: {
+          groupId: 'bk-api-gateway',
+          sessionTimeout: 30000,
+          heartbeatInterval: 10000,
+        },
+      },
+    }]),
+  ],
+  exports: [ClientsModule],
+})
+export class KafkaModule {}</code></pre>
+
+<h4>Publishing events (producer):</h4>
+<pre><code>// question-service/policy/policy.service.ts
+@Injectable()
+export class PolicyService {
+  constructor(
+    @Inject('KAFKA_SERVICE') private readonly kafka: ClientKafka,
+  ) {}
+
+  async createPolicy(data: CreatePolicyDto): Promise&lt;Policy&gt; {
+    // 1. Create policy in database (existing logic, unchanged)
+    const policy = await this.policyRepository.save(data);
+
+    // 2. Publish event (NEW — replaces direct TCP calls)
+    await this.kafka.emit('policy.events', {
+      key: policy.id.toString(),
+      value: {
+        eventId: uuid(),
+        eventType: 'policy.created',
+        eventVersion: 1,
+        source: 'question-service',
+        timestamp: new Date().toISOString(),
+        aggregateType: 'policy',
+        aggregateId: policy.id.toString(),
+        payload: {
+          policyNumber: policy.policyNumber,
+          productId: policy.productId,
+          insurerId: policy.insurerId,
+          grossPremium: policy.grossPremium,
+          // ... all fields consumers need
+        },
+      },
+    });
+
+    // 3. Return policy (no waiting for Sibro/LSQ/Email)
+    return policy;
+  }
+}</code></pre>
+
+<h4>Consuming events (consumer):</h4>
+<pre><code>// question-service/sibro/sibro.consumer.ts
+@Controller()
+export class SibroConsumer {
+  constructor(private readonly sibroService: SibroService) {}
+
+  @EventPattern('policy.events')
+  async handlePolicyCreated(
+    @Payload() event: BimaKavachEvent&lt;PolicyCreatedPayload&gt;,
+    @Ctx() context: KafkaContext,
+  ) {
+    if (event.eventType !== 'policy.created') return;
+
+    // Idempotency check
+    const existing = await this.sibroService
+      .findTransaction(event.payload.policyNumber);
+    if (existing) return;
+
+    try {
+      const sibroClientId = await this.sibroService
+        .resolveClient(event.payload);
+      const sibroPolicyId = await this.sibroService
+        .createPolicy(sibroClientId, event.payload);
+      await this.sibroService
+        .createPremiumTransaction(sibroPolicyId, event.payload);
+      await this.sibroService
+        .saveTransaction(event.payload.policyNumber, sibroPolicyId);
+    } catch (error) {
+      // Throwing → Kafka does NOT commit offset → automatic retry
+      throw error;
+    }
+  }
+}</code></pre>
+
+<!-- ─── 5.10 ─── -->
+<h3 id="510-observability">5.10 Observability &amp; Monitoring</h3>
+
+<p>With Kafka, we get operational visibility that we simply don't have today.</p>
+
+<h4>Key metrics to monitor:</h4>
+<table>
+  <thead><tr><th>Metric</th><th>What It Tells Us</th><th>Alert Threshold</th></tr></thead>
+  <tbody>
+    <tr><td>Consumer lag (per group)</td><td>How far behind a consumer is</td><td>&gt; 100 messages for &gt; 5 minutes</td></tr>
+    <tr><td>DLQ depth</td><td>How many events have permanently failed</td><td>&gt; 0 (any DLQ message needs attention)</td></tr>
+    <tr><td>Producer throughput</td><td>Events published per second per service</td><td>Anomaly detection (sudden drop)</td></tr>
+    <tr><td>Consumer processing time (p99)</td><td>How long each event takes to process</td><td>&gt; 10s for Sibro, &gt; 5s for LSQ, &gt; 2s for email</td></tr>
+    <tr><td>End-to-end latency</td><td>Time from publish to all consumers done</td><td>&gt; 60s for policy.created fan-out</td></tr>
+    <tr><td>Partition skew</td><td>Uneven load across partitions</td><td>&gt; 3x difference between most/least loaded</td></tr>
+  </tbody>
+</table>
+
+<h4>Alert examples mapped to our operations:</h4>
+<table>
+  <thead><tr><th>Alert</th><th>Condition</th><th>What's Happening</th><th>Action</th></tr></thead>
+  <tbody>
+    <tr><td>"Sibro sync backed up"</td><td>sibro-sync consumer lag &gt; 50</td><td>Sibro API might be down or slow</td><td>Check Sibro API status, review DLQ</td></tr>
+    <tr><td>"LSQ rate limit hit"</td><td>lsq-sync consumer lag growing steadily</td><td>Producing faster than 5 req/sec</td><td>Expected during bulk uploads, monitor</td></tr>
+    <tr><td>"Emails failing"</td><td>email-sender DLQ depth &gt; 0</td><td>SendGrid issues or invalid templates</td><td>Check SendGrid dashboard</td></tr>
+    <tr><td>"Policy events not flowing"</td><td>policy.events rate = 0 for 6h (business hours)</td><td>Question Service might be down</td><td>Check service health</td></tr>
+    <tr><td>"CDC slot growing"</td><td>Debezium replication slot &gt; 1GB</td><td>CDC consumer is stuck</td><td>Restart Debezium connector</td></tr>
+  </tbody>
+</table>
+
+<!-- ─── 5.11 ─── -->
+<h3 id="511-migration-strategy">5.11 Migration Strategy from Current State</h3>
+
+<p>We wouldn't flip a switch. Here's how we'd migrate to Kafka without disrupting production.</p>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+flowchart TD
+    subgraph "Phase A: Dual Write (2 weeks)"
+        A1["Services keep existing TCP calls"]
+        A2["Add Kafka producers alongside&lt;br/&gt;(publish events, nobody consumes yet)"]
+        A3["Validate: events match actual operations"]
+    end
+
+    subgraph "Phase B: Shadow Consumers (2 weeks)"
+        B1["Deploy Kafka consumers"]
+        B2["Consumers process events but&lt;br/&gt;DON'T call external APIs"]
+        B3["Compare: consumer output vs&lt;br/&gt;what TCP calls actually did"]
+    end
+
+    subgraph "Phase C: Consumer Cutover (1 week each)"
+        C1["Sibro: switch from TCP to Kafka"]
+        C2["LSQ: switch from TCP to Kafka"]
+        C3["Email: switch from TCP to Kafka"]
+    end
+
+    subgraph "Phase D: Remove TCP (1 week)"
+        D1["Remove old TCP call code"]
+        D2["Remove custom tracking tables"]
+        D3["Full Kafka architecture live"]
+    end
+
+    A1 --> A2 --> A3 --> B1 --> B2 --> B3 --> C1 --> C2 --> C3 --> D1 --> D2 --> D3
+  </pre>
+</div>
+
+<p><strong>Phase A &mdash; Dual Write (weeks 1-2):</strong> Our services continue working exactly as today. We add Kafka producers alongside existing logic. Both the TCP call AND the Kafka event happen. Nobody consumes the Kafka events yet &mdash; we're just validating that the events look correct.</p>
+
+<p><strong>Phase B &mdash; Shadow Consumers (weeks 3-4):</strong> We deploy Kafka consumers that read events and log what they WOULD do &mdash; but don't actually call Sibro, LSQ, or SendGrid. We compare the shadow output against what the TCP path actually did.</p>
+
+<p><strong>Phase C &mdash; Consumer Cutover (weeks 5-7, one system at a time):</strong> We flip each external integration from TCP to Kafka, one at a time. Start with email (lowest risk), then LSQ (most volume), then Sibro (most complex). Each cutover has a feature flag so we can revert instantly.</p>
+
+<p><strong>Phase D &mdash; Cleanup (week 8):</strong> Remove the old TCP call paths, deprecate the custom tracking tables, clean up dual-write code.</p>
+
+<!-- ─── 5.12 ─── -->
+<h3 id="512-cost-breakdown">5.12 Cost Breakdown</h3>
+
+<table>
+  <thead><tr><th>Component</th><th>AWS MSK</th><th>Redpanda Cloud</th><th>Self-hosted Redpanda</th></tr></thead>
+  <tbody>
+    <tr><td>Kafka cluster (3 brokers)</td><td>$350/month</td><td>$250/month</td><td>$90/month (3x t3.medium)</td></tr>
+    <tr><td>Kafka Connect (2 workers)</td><td>included in MSK Connect</td><td>$50/month</td><td>$60/month (2x t3.small)</td></tr>
+    <tr><td>Schema Registry</td><td>Glue (free tier)</td><td>included</td><td>included (built-in)</td></tr>
+    <tr><td>S3 storage (events)</td><td>~$10/month</td><td>~$10/month</td><td>~$10/month</td></tr>
+    <tr><td>Athena queries</td><td>~$5-20/month</td><td>~$5-20/month</td><td>~$5-20/month</td></tr>
+    <tr><td>Monitoring (Grafana)</td><td>CloudWatch ($15)</td><td>included</td><td>Grafana Cloud free tier</td></tr>
+    <tr><td><strong>Total</strong></td><td><strong>~$380-400/month</strong></td><td><strong>~$315-330/month</strong></td><td><strong>~$165-180/month</strong></td></tr>
+  </tbody>
+</table>
+
+<p>For comparison, our current approach costs $0 in infrastructure but carries hidden costs: manual admin intervention on failures, data inconsistencies between systems, no analytics capability, and engineering time spent debugging sync issues.</p>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="6-recommendation">6. Our Recommendation</h2>
+
+<h3>Start with Approach 3 (BullMQ + PostgreSQL), evolve into Approach 4 (Hybrid)</h3>
+
+<p>Here's why we believe this is the right path for where we are today:</p>
+
+<p><strong>1. Zero new paradigms for the team.</strong> We write NestJS + TypeScript today, and <code>@nestjs/bullmq</code> is a first-class NestJS module. No new languages, no new frameworks &mdash; the team can be productive from day one.</p>
+
+<p><strong>2. One new dependency.</strong> Redis. That's it. Three lines in our <code>docker-compose.yml</code>, ElastiCache in production. We're already managing PostgreSQL, S3, and Docker &mdash; Redis is the simplest thing we can add.</p>
+
+<p><strong>3. It solves every pain point we identified:</strong></p>
+
+<table>
+  <thead><tr><th>Pain Point</th><th>How BullMQ Solves It</th></tr></thead>
+  <tbody>
+    <tr><td>Sibro staged execution + error emails</td><td>FlowProducer with parent-child job dependencies + automatic retry</td></tr>
+    <tr><td>30-second payment sleep</td><td><code>payment-process</code> queue &mdash; job triggers on webhook receipt, no arbitrary wait</td></tr>
+    <tr><td>4:30 AM monolithic cron</td><td>Individual repeatable jobs per task, each with its own retry/DLQ</td></tr>
+    <tr><td>CSV bulk upload at 5 req/sec</td><td>BullMQ <code>rateLimiter: { max: 5, duration: 1000 }</code> &mdash; built-in</td></tr>
+    <tr><td><code>ClientEmailScheduler</code> tables</td><td>BullMQ delayed jobs with built-in status tracking</td></tr>
+    <tr><td><code>LsqBulkOperation</code> tables</td><td>BullMQ job tracking with per-job results</td></tr>
+    <tr><td>No visibility into async operations</td><td>Bull Board dashboard &mdash; every job, its status, and its history</td></tr>
+  </tbody>
+</table>
+
+<p><strong>4. Incremental adoption.</strong> We migrate one queue at a time. Start with email (lowest risk), then Sibro sync (highest pain), then LSQ operations. No big-bang migration, no service outage.</p>
+
+<p><strong>5. It doesn't close any doors.</strong> If we grow to 10M events/day or need cross-team event contracts, BullMQ producers can be swapped to Kafka producers without rewriting consumer logic. The PostgreSQL event log provides the audit trail until we're ready for Kafka CDC in Phase 3.</p>
+
+<div class="callout amber">
+  <strong>When we should revisit this decision:</strong>
+  <ul>
+    <li>If event volume exceeds 100K/day &rarr; evaluate Kafka/Redpanda</li>
+    <li>If multiple new services need to independently consume the same events &rarr; EventBridge or Kafka fan-out</li>
+    <li>If real-time analytics becomes a core requirement &rarr; Kafka Streams or Flink</li>
+  </ul>
+</div>
+
+</main>
+
+<script>
+// Mermaid init
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'default',
+  securityLevel: 'loose',
+  flowchart: { useMaxWidth: false, htmlLabels: true },
+  gantt: { useMaxWidth: false }
+});
+
+// Modal state
+const modal = document.getElementById('diagramModal');
+const viewport = document.getElementById('modalViewport');
+const content = document.getElementById('modalContent');
+const hint = document.getElementById('modalHint');
+let modalScale = 1, modalTranslateX = 0, modalTranslateY = 0;
+let isPanning = false, panStartX, panStartY, panStartTX, panStartTY;
+
+function applyTransform() {
+  content.style.transform = `translate(${modalTranslateX}px, ${modalTranslateY}px) scale(${modalScale})`;
+}
+
+function openModal(btn) {
+  const wrapper = btn.closest('.mermaid-wrapper');
+  const svg = wrapper.querySelector('svg');
+  if (!svg) return;
+  content.innerHTML = '';
+  content.appendChild(svg.cloneNode(true));
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  hint.classList.remove('faded');
+  setTimeout(() => hint.classList.add('faded'), 3000);
+  setTimeout(modalFit, 100);
+}
+
+function closeModal() {
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function modalZoom(factor) {
+  const vw = viewport.clientWidth / 2;
+  const vh = viewport.clientHeight / 2;
+  zoomAtPoint(factor, vw, vh);
+}
+
+function zoomAtPoint(factor, cx, cy) {
+  const newScale = Math.max(0.1, Math.min(10, modalScale * factor));
+  const ratio = newScale / modalScale;
+  modalTranslateX = cx - ratio * (cx - modalTranslateX);
+  modalTranslateY = cy - ratio * (cy - modalTranslateY);
+  modalScale = newScale;
+  applyTransform();
+}
+
+function modalFit() {
+  const svg = content.querySelector('svg');
+  if (!svg) return;
+  const vw = viewport.clientWidth;
+  const vh = viewport.clientHeight;
+  const svgW = parseFloat(svg.getAttribute('width')) || svg.clientWidth || 800;
+  const svgH = parseFloat(svg.getAttribute('height')) || svg.clientHeight || 600;
+  const padding = 80;
+  const scaleX = (vw - padding) / svgW;
+  const scaleY = (vh - padding) / svgH;
+  modalScale = Math.min(scaleX, scaleY, 3);
+  modalTranslateX = (vw - svgW * modalScale) / 2;
+  modalTranslateY = (vh - svgH * modalScale) / 2;
+  applyTransform();
+}
+
+function modalReset() {
+  modalScale = 1;
+  const svg = content.querySelector('svg');
+  if (svg) {
+    const vw = viewport.clientWidth;
+    const vh = viewport.clientHeight;
+    const svgW = parseFloat(svg.getAttribute('width')) || svg.clientWidth || 800;
+    const svgH = parseFloat(svg.getAttribute('height')) || svg.clientHeight || 600;
+    modalTranslateX = (vw - svgW) / 2;
+    modalTranslateY = (vh - svgH) / 2;
+  } else {
+    modalTranslateX = 0;
+    modalTranslateY = 0;
+  }
+  applyTransform();
+}
+
+viewport.addEventListener('wheel', (e) => {
+  if (!modal.classList.contains('active')) return;
+  e.preventDefault();
+  const rect = viewport.getBoundingClientRect();
+  const cx = e.clientX - rect.left;
+  const cy = e.clientY - rect.top;
+  const factor = e.deltaY < 0 ? 1.15 : 0.87;
+  zoomAtPoint(factor, cx, cy);
+}, { passive: false });
+
+viewport.addEventListener('mousedown', (e) => {
+  if (!modal.classList.contains('active')) return;
+  isPanning = true;
+  panStartX = e.clientX;
+  panStartY = e.clientY;
+  panStartTX = modalTranslateX;
+  panStartTY = modalTranslateY;
+  viewport.style.cursor = 'grabbing';
+});
+
+window.addEventListener('mousemove', (e) => {
+  if (!isPanning) return;
+  modalTranslateX = panStartTX + (e.clientX - panStartX);
+  modalTranslateY = panStartTY + (e.clientY - panStartY);
+  applyTransform();
+});
+
+window.addEventListener('mouseup', () => {
+  if (!isPanning) return;
+  isPanning = false;
+  viewport.style.cursor = 'grab';
+});
+
+document.addEventListener('keydown', (e) => {
+  if (!modal.classList.contains('active')) return;
+  if (e.key === 'Escape') { closeModal(); }
+  else if (e.key === '+' || e.key === '=') { modalZoom(1.2); }
+  else if (e.key === '-' || e.key === '_') { modalZoom(0.8); }
+  else if (e.key === '0') { modalFit(); }
+});
+
+// Sidebar active highlight on scroll
+(function() {
+  const links = document.querySelectorAll('nav.sidebar a');
+  const sections = [];
+  links.forEach(link => {
+    const id = link.getAttribute('href');
+    if (id && id.startsWith('#')) {
+      const el = document.getElementById(id.slice(1));
+      if (el) sections.push({ el, link });
+    }
+  });
+  window.addEventListener('scroll', () => {
+    let current = null;
+    for (const s of sections) {
+      if (s.el.getBoundingClientRect().top <= 120) current = s;
+    }
+    links.forEach(l => l.classList.remove('active'));
+    if (current) current.link.classList.add('active');
+  });
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BimaKavach Platform Architecture</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #1a1a2e;
+    --heading: #0e2b72;
+    --border: #e0e0e0;
+    --code-bg: #f5f5f5;
+    --table-header: #0e2b72;
+    --table-header-text: #ffffff;
+    --table-stripe: #f8f9fa;
+    --link: #1565c0;
+    --sidebar-bg: #f8f9fa;
+    --sidebar-active: #0e2b72;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.7;
+    display: flex;
+  }
+
+  /* Sidebar TOC */
+  nav.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    padding: 20px 16px;
+    font-size: 13px;
+    z-index: 100;
+  }
+
+  nav.sidebar h2 {
+    font-size: 15px;
+    color: var(--heading);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--heading);
+  }
+
+  nav.sidebar ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  nav.sidebar li {
+    margin: 2px 0;
+  }
+
+  nav.sidebar li.level-2 {
+    padding-left: 16px;
+  }
+
+  nav.sidebar a {
+    color: var(--text);
+    text-decoration: none;
+    display: block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+
+  nav.sidebar a:hover,
+  nav.sidebar a.active {
+    background: var(--sidebar-active);
+    color: #fff;
+  }
+
+  /* Main content */
+  main {
+    margin-left: 280px;
+    max-width: 1100px;
+    padding: 40px 48px;
+    width: calc(100% - 280px);
+  }
+
+  h1 {
+    font-size: 2.2em;
+    color: var(--heading);
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 3px solid var(--heading);
+  }
+
+  h2 {
+    font-size: 1.6em;
+    color: var(--heading);
+    margin-top: 48px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+  }
+
+  h3 {
+    font-size: 1.25em;
+    color: var(--heading);
+    margin-top: 36px;
+    margin-bottom: 12px;
+  }
+
+  h4 {
+    font-size: 1.05em;
+    color: var(--heading);
+    margin-top: 24px;
+    margin-bottom: 8px;
+  }
+
+  p {
+    margin-bottom: 16px;
+  }
+
+  strong { font-weight: 600; }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 36px 0;
+  }
+
+  a {
+    color: var(--link);
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    font-size: 14px;
+  }
+
+  thead th {
+    background: var(--table-header);
+    color: var(--table-header-text);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr:nth-child(even) {
+    background: var(--table-stripe);
+  }
+
+  tbody tr:hover {
+    background: #e8eaf6;
+  }
+
+  /* Code blocks */
+  code {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+
+  pre {
+    background: var(--code-bg);
+    padding: 16px 20px;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 12px 0 20px;
+    border: 1px solid var(--border);
+  }
+
+  pre code {
+    background: none;
+    padding: 0;
+  }
+
+  /* Mermaid diagrams */
+  .mermaid-wrapper {
+    position: relative;
+    margin: 20px 0 28px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    background: #fafbfc;
+    overflow-x: auto;
+  }
+
+  .mermaid-wrapper .expand-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--heading);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    z-index: 10;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+  }
+
+  .mermaid-wrapper .expand-btn:hover {
+    opacity: 1;
+  }
+
+  /* Mermaid SVG overflow fix */
+  .mermaid svg { overflow: visible !important; }
+  .mermaid svg * { overflow: visible !important; }
+  .node foreignObject { overflow: visible !important; }
+  .nodeLabel { white-space: nowrap !important; }
+  .edgeLabel { white-space: nowrap !important; }
+  .label { overflow: visible !important; }
+
+  /* Fullscreen Modal */
+  .diagram-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.92);
+    z-index: 10000;
+    flex-direction: column;
+  }
+
+  .diagram-modal.active {
+    display: flex;
+  }
+
+  .modal-toolbar {
+    display: flex;
+    gap: 6px;
+    padding: 10px 16px;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    z-index: 10001;
+    background: rgba(0,0,0,0.5);
+  }
+
+  .modal-toolbar button {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 4px;
+    padding: 6px 14px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .modal-toolbar button:hover {
+    background: rgba(255,255,255,0.3);
+  }
+
+  .modal-viewport {
+    flex: 1;
+    overflow: hidden;
+    cursor: grab;
+    position: relative;
+  }
+
+  .modal-viewport:active {
+    cursor: grabbing;
+  }
+
+  .modal-viewport .modal-content {
+    transform-origin: 0 0;
+    will-change: transform;
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .modal-viewport .modal-content svg {
+    overflow: visible !important;
+    display: block;
+  }
+
+  .modal-hint {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    background: rgba(0,0,0,0.5);
+    padding: 6px 16px;
+    border-radius: 20px;
+    transition: opacity 1s;
+    pointer-events: none;
+  }
+
+  .modal-hint.faded {
+    opacity: 0;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    nav.sidebar {
+      display: none;
+    }
+    main {
+      margin-left: 0;
+      width: 100%;
+      padding: 24px 20px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Sidebar TOC -->
+<nav class="sidebar">
+  <h2>Contents</h2>
+  <ul>
+    <li><a href="#1-system-overview">1. System Overview</a></li>
+    <li><a href="#2-technical-architecture">2. Technical Architecture</a></li>
+    <li class="level-2"><a href="#21-high-level-system-diagram">2.1 High-Level System Diagram</a></li>
+    <li class="level-2"><a href="#22-service-details">2.2 Service Details</a></li>
+    <li class="level-2"><a href="#23-inter-service-communication">2.3 Inter-Service Communication</a></li>
+    <li class="level-2"><a href="#24-database-architecture">2.4 Database Architecture</a></li>
+    <li class="level-2"><a href="#25-external-integrations">2.5 External Integrations</a></li>
+    <li class="level-2"><a href="#26-leadsquared-integration">2.6 LeadSquared Integration</a></li>
+    <li class="level-2"><a href="#27-sibro-integration">2.7 Sibro Integration</a></li>
+    <li class="level-2"><a href="#28-infrastructure-deployment">2.8 Infrastructure &amp; Deployment</a></li>
+    <li><a href="#3-usability-architecture">3. Usability Architecture</a></li>
+    <li class="level-2"><a href="#31-user-roles-access">3.1 User Roles &amp; Access</a></li>
+    <li class="level-2"><a href="#32-customer-journey-bk-web">3.2 Customer Journey (BK Web)</a></li>
+    <li class="level-2"><a href="#33-admin-journey-bi-admin">3.3 Admin Journey (bi-admin)</a></li>
+    <li class="level-2"><a href="#34-pos-agent-journey">3.4 POS Agent Journey</a></li>
+    <li class="level-2"><a href="#35-feature-to-service-mapping">3.5 Feature-to-Service Mapping</a></li>
+  </ul>
+</nav>
+
+<!-- Fullscreen Modal -->
+<div class="diagram-modal" id="diagramModal">
+  <div class="modal-toolbar">
+    <button onclick="modalZoom(1.3)" title="Zoom In (+)">+ Zoom In</button>
+    <button onclick="modalZoom(0.7)" title="Zoom Out (-)">- Zoom Out</button>
+    <button onclick="modalFit()" title="Fit to Screen (0)">Fit</button>
+    <button onclick="modalReset()" title="Reset to 1:1">1:1</button>
+    <button onclick="closeModal()" title="Close (Esc)">Close</button>
+  </div>
+  <div class="modal-viewport" id="modalViewport">
+    <div class="modal-content" id="modalContent"></div>
+  </div>
+  <div class="modal-hint" id="modalHint">Scroll to zoom &middot; Drag to pan &middot; +/- keys to zoom &middot; 0 to fit &middot; Esc to close</div>
+</div>
+
+<!-- Main content -->
+<main>
+
+<h1>BimaKavach Platform Architecture</h1>
+
+<!-- ============================================================ -->
+<h2 id="1-system-overview">1. System Overview</h2>
+
+<p>BimaKavach is a <strong>B2B insurance aggregation platform</strong> that enables businesses to compare, purchase, and manage commercial insurance policies from 25+ insurers across 20+ product categories.</p>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+graph TB
+    subgraph "User-Facing Applications"
+        WEB["BK Web V2.0&lt;br/&gt;&lt;i&gt;Customer Portal&lt;/i&gt;&lt;br/&gt;Next.js 14 | Port 3000"]
+        POS_APP["POS Mobile App&lt;br/&gt;&lt;i&gt;Agent App&lt;/i&gt;&lt;br/&gt;React Native + Expo"]
+    end
+
+    subgraph "Admin Dashboards"
+        ADMIN["bi-admin V2&lt;br/&gt;&lt;i&gt;Internal Admin Panel&lt;/i&gt;&lt;br/&gt;Next.js 13 | Port 3000"]
+        POS_ADMIN["POS Admin&lt;br/&gt;&lt;i&gt;POS Admin Panel&lt;/i&gt;&lt;br/&gt;Next.js 16 | Port 3012"]
+        POS_REPORT["POS Reporting&lt;br/&gt;&lt;i&gt;Analytics Dashboard&lt;/i&gt;&lt;br/&gt;React | CloudFront"]
+    end
+
+    subgraph "Backend Services"
+        GW["API Gateway&lt;br/&gt;NestJS | Port 3005"]
+        POS_API["POS Backend&lt;br/&gt;NestJS | Port 3011"]
+        COMMON["Common Service&lt;br/&gt;NestJS | Port 3006"]
+        QUESTION["Question Service&lt;br/&gt;NestJS | Port 3007"]
+        EMAIL["Email Service&lt;br/&gt;NestJS | Port 3008"]
+        PROPOSAL["Proposal Form Service&lt;br/&gt;NestJS | Port 3009"]
+    end
+
+    WEB -->|HTTPS + HMAC| GW
+    ADMIN -->|HTTPS + JWT| GW
+    POS_APP -->|HTTPS + JWT| POS_API
+    POS_ADMIN -->|NextAuth + HMAC| POS_API
+    POS_REPORT -->|Google Sheets API| SHEETS[(Google Sheets)]
+
+    GW -->|TCP| COMMON
+    GW -->|TCP| QUESTION
+    GW -->|TCP| EMAIL
+    GW -->|TCP| PROPOSAL
+
+    POS_API -->|TCP| COMMON
+    POS_API -->|TCP| QUESTION
+
+    QUESTION -->|TCP| COMMON
+    QUESTION -->|TCP| EMAIL
+    QUESTION -->|TCP| PROPOSAL
+    PROPOSAL -->|TCP| COMMON
+    PROPOSAL -->|TCP| EMAIL
+    PROPOSAL -->|TCP| QUESTION
+    EMAIL -->|TCP| COMMON
+  </pre>
+</div>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="2-technical-architecture">2. Technical Architecture</h2>
+
+<h3 id="21-high-level-system-diagram">2.1 High-Level System Diagram</h3>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+graph LR
+    subgraph "Clients"
+        C1["Browser&lt;br/&gt;(BK Web)"]
+        C2["Browser&lt;br/&gt;(Admin)"]
+        C3["Mobile&lt;br/&gt;(POS App)"]
+        C4["Browser&lt;br/&gt;(POS Admin)"]
+    end
+
+    subgraph "API Layer"
+        GW["API Gateway :3005"]
+        POS["POS API :3011"]
+    end
+
+    subgraph "Microservices (TCP)"
+        MS_COMMON["Common :3006"]
+        MS_QUESTION["Question :3007"]
+        MS_EMAIL["Email :3008"]
+        MS_PROPOSAL["Proposal Form :3009"]
+    end
+
+    subgraph "Data Stores"
+        PG[(PostgreSQL)]
+        S3[(AWS S3)]
+        GCS[(Google Cloud Storage)]
+    end
+
+    subgraph "External Services"
+        SG[SendGrid]
+        ANVIL[Anvil PDF]
+        LSQ[LeadSquared CRM]
+        SIBRO[Sibro Broker]
+        PAY[Payment Gateways]
+        MSG91[MSG91 OTP]
+        PROBE[Probe CIN API]
+        CHOLA[Chola Insurance API]
+        FIREBASE[Firebase FCM]
+        WHATSAPP[AiSensy WhatsApp]
+        GDOC[Google Document AI]
+    end
+
+    C1 --> GW
+    C2 --> GW
+    C3 --> POS
+    C4 --> POS
+
+    GW --> MS_COMMON & MS_QUESTION & MS_EMAIL & MS_PROPOSAL
+    POS --> MS_COMMON & MS_QUESTION
+
+    MS_COMMON & MS_QUESTION & MS_EMAIL & MS_PROPOSAL --> PG
+    GW --> PG
+    POS --> PG
+
+    GW & MS_EMAIL & MS_QUESTION & MS_PROPOSAL --> S3
+    MS_QUESTION --> GCS
+    MS_EMAIL --> SG
+    MS_PROPOSAL --> ANVIL
+    GW --> LSQ & PROBE & MSG91
+    MS_QUESTION --> SIBRO & CHOLA & GDOC
+    GW --> PAY
+    POS --> FIREBASE & WHATSAPP & MSG91
+  </pre>
+</div>
+
+<!-- 2.2 Service Details -->
+<h3 id="22-service-details">2.2 Service Details</h3>
+
+<table>
+  <thead>
+    <tr><th>Service</th><th>Repo</th><th>Tech Stack</th><th>Port</th><th>Purpose</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>BK Web V2.0</strong></td><td><code>BK_Web_V2.0</code></td><td>Next.js 14, React 18, MUI, Framer Motion</td><td>3000</td><td>Customer-facing insurance portal</td></tr>
+    <tr><td><strong>bi-admin V2</strong></td><td><code>bi-admin-V2</code></td><td>Next.js 13, TypeScript, Redux Toolkit, MUI, Tailwind, Ant Design</td><td>3000</td><td>Internal admin dashboard</td></tr>
+    <tr><td><strong>API Gateway</strong></td><td><code>microservice-api-gateway</code></td><td>NestJS 10, TypeScript, TypeORM</td><td>3005</td><td>Central API entry point, auth, routing</td></tr>
+    <tr><td><strong>Common Service</strong></td><td><code>microservice-common</code></td><td>NestJS 10, TypeScript, TypeORM</td><td>3006</td><td>Master data, products, pricing, CIN</td></tr>
+    <tr><td><strong>Question Service</strong></td><td><code>microservice-question</code></td><td>NestJS 10, TypeScript, TypeORM, Puppeteer</td><td>3007</td><td>Questions, quotes, policies, claims, OCR</td></tr>
+    <tr><td><strong>Email Service</strong></td><td><code>microservice-email</code></td><td>NestJS 10, TypeScript, TypeORM, Puppeteer</td><td>3008</td><td>Email templates, sending, scheduling</td></tr>
+    <tr><td><strong>Proposal Form Service</strong></td><td><code>microservice-proposal-form</code></td><td>NestJS 10, TypeScript, TypeORM</td><td>3009</td><td>Proposal form lifecycle, PDF generation</td></tr>
+    <tr><td><strong>POS Backend</strong></td><td><code>pos/microservice-pos</code></td><td>NestJS 11, TypeScript, TypeORM</td><td>3011</td><td>POS agent platform backend</td></tr>
+    <tr><td><strong>POS Admin</strong></td><td><code>pos/pos-admin</code></td><td>Next.js 16, React 19, NextAuth</td><td>3012</td><td>POS admin dashboard</td></tr>
+    <tr><td><strong>POS Mobile App</strong></td><td><code>pos/pos-app</code></td><td>React Native 0.81, Expo 54</td><td>--</td><td>Agent mobile application</td></tr>
+    <tr><td><strong>POS Reporting</strong></td><td><code>pos/pos-reporting</code></td><td>React 19, Google Sheets API</td><td>--</td><td>Analytics &amp; reporting (CloudFront)</td></tr>
+  </tbody>
+</table>
+
+<!-- 2.3 Inter-Service Communication -->
+<h3 id="23-inter-service-communication">2.3 Inter-Service Communication</h3>
+
+<p>All backend microservices communicate via <strong>NestJS TCP Transport</strong> using RPC-style message patterns.</p>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+graph TD
+    subgraph "API Gateway :3005"
+        GW_AUTH["Auth &amp; Guards&lt;br/&gt;JWT, HMAC, Roles"]
+        GW_ROUTES["60+ Controllers&lt;br/&gt;REST → TCP routing"]
+        GW_CRON["Cron Jobs&lt;br/&gt;Daily 4:30 AM IST"]
+    end
+
+    subgraph "Common :3006"
+        C_PRODUCTS["Products &amp; Insurers"]
+        C_MASTER["Master Data&lt;br/&gt;States, Industries, Occupancy"]
+        C_PRICING["Pricing Engine"]
+        C_CIN["CIN/Probe Data"]
+        C_MARINE["Marine Metadata"]
+        C_TP["Third-Party API Config"]
+    end
+
+    subgraph "Question :3007"
+        Q_L1L2["L1/L2 Questions"]
+        Q_POLICY["Policy Management"]
+        Q_QUOTES["Quotes Engine"]
+        Q_CLAIMS["Claims Processing"]
+        Q_OCR["OCR / Document AI"]
+        Q_SIBRO["Sibro Integration"]
+        Q_RECO["Recommendations"]
+    end
+
+    subgraph "Email :3008"
+        E_TEMPLATES["Templates &amp; Bodies"]
+        E_SEND["SendGrid Sending"]
+        E_SCHEDULE["Scheduler &amp; Retry"]
+        E_CASE["Case Studies"]
+    end
+
+    subgraph "Proposal Form :3009"
+        P_FORMS["Form Templates"]
+        P_ANSWERS["Client Answers"]
+        P_PDF["Anvil PDF Generation"]
+        P_STATUS["Status Tracking"]
+    end
+
+    GW_ROUTES -->|"products, insurers,&lt;br/&gt;pricing, master data"| C_PRODUCTS
+    GW_ROUTES -->|"questions, quotes,&lt;br/&gt;policies, claims"| Q_L1L2
+    GW_ROUTES -->|"send email,&lt;br/&gt;templates, logs"| E_TEMPLATES
+    GW_ROUTES -->|"proposal forms,&lt;br/&gt;answers, PDF"| P_FORMS
+
+    Q_POLICY -->|"get products,&lt;br/&gt;get config"| C_PRODUCTS
+    Q_POLICY -->|"send email"| E_SEND
+    Q_QUOTES -->|"proposal form link"| P_STATUS
+
+    P_ANSWERS -->|"get products,&lt;br/&gt;get config"| C_PRODUCTS
+    P_ANSWERS -->|"send email,&lt;br/&gt;fill PDF"| E_SEND
+    P_STATUS -->|"update link"| Q_POLICY
+
+    E_SCHEDULE -->|"get config"| C_PRODUCTS
+  </pre>
+</div>
+
+<p><strong>Key Message Patterns:</strong></p>
+
+<table>
+  <thead>
+    <tr><th>From</th><th>To</th><th>Patterns</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Gateway → Common</td><td></td><td><code>get-product-list</code>, <code>get-insurer-list</code>, <code>get-pricing</code>, <code>get-configuration-details-by-key</code></td></tr>
+    <tr><td>Gateway → Question</td><td></td><td><code>get-question-list</code>, <code>get-quotes</code>, <code>create-policy</code>, <code>get-policy-list</code></td></tr>
+    <tr><td>Gateway → Email</td><td></td><td><code>send-email</code>, <code>get-email-template-list</code>, <code>create-email-trigger</code></td></tr>
+    <tr><td>Gateway → Proposal</td><td></td><td><code>get-proposal-form</code>, <code>update-form</code>, <code>initiate-proposal-form</code></td></tr>
+    <tr><td>Question → Common</td><td></td><td><code>get-product-by-id</code>, <code>get-short-insurer-list</code></td></tr>
+    <tr><td>Question → Email</td><td></td><td><code>send-email</code>, <code>schedule-email</code></td></tr>
+    <tr><td>Proposal → Email</td><td></td><td><code>send-email</code>, <code>proposal-form-fill</code>, <code>create-email-logs-and-scheduler</code></td></tr>
+    <tr><td>Proposal → Common</td><td></td><td><code>get-product-by-id</code>, <code>get-configuration-details-by-key</code></td></tr>
+    <tr><td>POS API → Common</td><td></td><td><code>get-product-list</code>, <code>get-insurer-list</code></td></tr>
+    <tr><td>POS API → Question</td><td></td><td><code>get-question-list</code>, L1/L2 answers</td></tr>
+  </tbody>
+</table>
+
+<!-- 2.4 Database Architecture -->
+<h3 id="24-database-architecture">2.4 Database Architecture</h3>
+
+<p>All services connect to <strong>PostgreSQL</strong> (AWS RDS in production). Each service manages its own set of tables but shares the same database instance.</p>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+erDiagram
+    API_GATEWAY {
+        table User
+        table Company
+        table RefreshToken
+        table UserCompany
+        table Partner
+        table LeadSquare
+        table UserOtp
+        table ProbeDetails
+    }
+
+    COMMON_SERVICE {
+        table Product
+        table ProductGroup
+        table Insurer
+        table Industry
+        table Pricing
+        table FireOccupancy
+        table StateMaster
+        table Roles
+        table Resources
+        table CinDetails
+        table MarineMetadata
+    }
+
+    QUESTION_SERVICE {
+        table L1Question
+        table L2Question
+        table Policy
+        table Quote
+        table QuoteItem
+        table Claim
+        table ClientAnswerForm
+        table PolicyRequest
+        table OcrAuditLog
+        table SibroInsurer
+    }
+
+    EMAIL_SERVICE {
+        table EmailLog
+        table Template
+        table EmailBody
+        table Trigger
+        table EmailVariables
+        table ClientEmailScheduler
+    }
+
+    PROPOSAL_SERVICE {
+        table ProposalForm
+        table ProposalFormQuestion
+        table ProposalFormAnswer
+        table PolicyProposalFormDetails
+        table ProposalFormTemplate
+    }
+
+    POS_SERVICE {
+        table PosUser
+        table PosClient
+        table PosPolicy
+        table PosBrokerage
+        table PosQuote
+        table PosClaim
+        table PosCampaign
+        table PosRegion
+        table PosEndorsement
+        table PosNotification
+    }
+  </pre>
+</div>
+
+<!-- 2.5 External Integrations -->
+<h3 id="25-external-integrations">2.5 External Integrations</h3>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+graph TB
+    subgraph "Payment Gateways"
+        FG["Future Generali"]
+        CHOLA_PAY["Chola Insurance"]
+        MAGMA["Magma HDI"]
+        CASHFREE["Cashfree"]
+    end
+
+    subgraph "CRM &amp; Lead Management"
+        LSQ["LeadSquared&lt;br/&gt;Lead tracking, activities"]
+        SIBRO_EXT["Sibro&lt;br/&gt;Broker platform sync"]
+    end
+
+    subgraph "Communication"
+        SG["SendGrid&lt;br/&gt;Transactional email"]
+        MSG91_EXT["MSG91&lt;br/&gt;SMS OTP"]
+        FIREBASE_EXT["Firebase FCM&lt;br/&gt;Push notifications"]
+        AISENSY["AiSensy&lt;br/&gt;WhatsApp messaging"]
+    end
+
+    subgraph "Document &amp; Data"
+        ANVIL_EXT["Anvil.io&lt;br/&gt;PDF form filling"]
+        PROBE_EXT["Probe API&lt;br/&gt;CIN/Company verification"]
+        GDOCAI["Google Document AI&lt;br/&gt;OCR extraction"]
+        TESSERACT["Tesseract.js&lt;br/&gt;Text extraction"]
+    end
+
+    subgraph "Cloud Infrastructure"
+        S3_EXT["AWS S3&lt;br/&gt;File storage"]
+        CW["AWS CloudWatch&lt;br/&gt;Centralized logging"]
+        CF["AWS CloudFront&lt;br/&gt;CDN"]
+        RDS["AWS RDS&lt;br/&gt;PostgreSQL"]
+        GCS_EXT["Google Cloud Storage"]
+    end
+
+    subgraph "Analytics"
+        GTM["Google Tag Manager"]
+        GSHEETS["Google Sheets&lt;br/&gt;POS Reporting"]
+    end
+
+    GW_NODE["API Gateway"] --> FG & CHOLA_PAY & MAGMA & LSQ & PROBE_EXT & MSG91_EXT
+    Q_NODE["Question Service"] --> SIBRO_EXT & GDOCAI & TESSERACT & CASHFREE
+    E_NODE["Email Service"] --> SG
+    P_NODE["Proposal Service"] --> ANVIL_EXT
+    POS_NODE["POS Backend"] --> FIREBASE_EXT & AISENSY & MSG91_EXT
+    WEB_NODE["BK Web"] --> GTM
+  </pre>
+</div>
+
+<table>
+  <thead>
+    <tr><th>Integration</th><th>Service</th><th>Purpose</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>SendGrid</strong></td><td>Email Service</td><td>Transactional emails, templates, bulk sending</td></tr>
+    <tr><td><strong>Anvil.io</strong></td><td>Proposal Form Service</td><td>PDF form filling and signing</td></tr>
+    <tr><td><strong>LeadSquared</strong></td><td>API Gateway</td><td>CRM - lead creation, activity tracking, webhooks</td></tr>
+    <tr><td><strong>Sibro</strong></td><td>Question Service</td><td>Insurance broker platform sync (policies, transactions)</td></tr>
+    <tr><td><strong>Probe API</strong></td><td>API Gateway</td><td>Company CIN/registration verification</td></tr>
+    <tr><td><strong>Google Document AI</strong></td><td>Question Service</td><td>Policy document OCR extraction</td></tr>
+    <tr><td><strong>Chola Insurance API</strong></td><td>Question Service</td><td>Premium calculation, occupancy data</td></tr>
+    <tr><td><strong>Future Generali</strong></td><td>API Gateway</td><td>Payment processing</td></tr>
+    <tr><td><strong>Magma HDI</strong></td><td>API Gateway</td><td>Payment processing</td></tr>
+    <tr><td><strong>Cashfree</strong></td><td>Question Service</td><td>Payment gateway</td></tr>
+    <tr><td><strong>MSG91</strong></td><td>API Gateway, POS</td><td>SMS OTP delivery</td></tr>
+    <tr><td><strong>Firebase FCM</strong></td><td>POS Backend</td><td>Mobile push notifications</td></tr>
+    <tr><td><strong>AiSensy</strong></td><td>POS Backend</td><td>WhatsApp message automation</td></tr>
+    <tr><td><strong>AWS S3</strong></td><td>Multiple</td><td>Document &amp; file storage (ap-south-1)</td></tr>
+    <tr><td><strong>AWS CloudWatch</strong></td><td>Multiple</td><td>Centralized logging</td></tr>
+    <tr><td><strong>Google Sheets</strong></td><td>POS Reporting</td><td>Analytics data source</td></tr>
+  </tbody>
+</table>
+
+<!-- 2.6 LeadSquared Integration -->
+<h3 id="26-leadsquared-integration">2.6 LeadSquared Integration</h3>
+
+<p>LeadSquared is the CRM system used for lead lifecycle management -- from website visitor tracking through policy purchase and renewal.</p>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+graph TB
+    subgraph "Lead Sources"
+        WEB_TRACK["BK Web Tracker.js&lt;br/&gt;&lt;i&gt;Behavioral tracking&lt;/i&gt;&lt;br/&gt;Account: 66484"]
+        QUOTE_FLOW["Quote Generation&lt;br/&gt;&lt;i&gt;L1 form → OTP → Quote&lt;/i&gt;"]
+        BULK_CSV["Bulk CSV Upload&lt;br/&gt;&lt;i&gt;Renewal leads&lt;/i&gt;"]
+        PARTNER_LEAD["Partner Leads&lt;br/&gt;&lt;i&gt;via Partner API&lt;/i&gt;"]
+        OFFLINE["Offline / Manual&lt;br/&gt;&lt;i&gt;Admin-created leads&lt;/i&gt;"]
+    end
+
+    subgraph "API Gateway :3005"
+        LSQ_MODULE["LeadSquared Module"]
+        LSQ_BULK["Bulk Operations Service&lt;br/&gt;&lt;i&gt;5 req/sec rate limit&lt;/i&gt;"]
+        LSQ_LAPP["LAPP Service&lt;br/&gt;&lt;i&gt;Renewal management&lt;/i&gt;"]
+        LSQ_CRON["Cron Jobs&lt;br/&gt;&lt;i&gt;Daily 4:30 AM IST&lt;/i&gt;&lt;br/&gt;- Leads not converted (45 days)&lt;br/&gt;- Policy reminders&lt;br/&gt;- Proposal form reminders"]
+    end
+
+    subgraph "Question Service :3007"
+        LSQ_QS["LeadSquared Service&lt;br/&gt;&lt;i&gt;Product-specific lead creation&lt;/i&gt;&lt;br/&gt;CPM, EAR, CAR, Crime,&lt;br/&gt;Cyber, CGL, D&amp;O, E&amp;O"]
+    end
+
+    subgraph "LeadSquared API"
+        direction TB
+        LSQ_CAPTURE["Lead.Capture&lt;br/&gt;&lt;i&gt;Create/update leads&lt;/i&gt;"]
+        LSQ_ACTIVITY["ProspectActivity.Create&lt;br/&gt;&lt;i&gt;Log activities&lt;/i&gt;"]
+        LSQ_OPP["Opportunity&lt;br/&gt;&lt;i&gt;Cross-sell, renewals&lt;/i&gt;"]
+        LSQ_GET["Lead.GetById&lt;br/&gt;&lt;i&gt;Fetch lead details&lt;/i&gt;"]
+        LSQ_WEBHOOK["Webhooks&lt;br/&gt;&lt;i&gt;Callbacks to Gateway&lt;/i&gt;"]
+    end
+
+    WEB_TRACK -->|"Page views, clicks,&lt;br/&gt;form interactions"| LSQ_CAPTURE
+    QUOTE_FLOW --> LSQ_MODULE
+    BULK_CSV --> LSQ_BULK
+    PARTNER_LEAD --> LSQ_MODULE
+    OFFLINE --> LSQ_MODULE
+
+    LSQ_MODULE -->|"Lead data + custom fields"| LSQ_CAPTURE
+    LSQ_MODULE -->|"Policy events"| LSQ_ACTIVITY
+    LSQ_MODULE -->|"Renewal/cross-sell"| LSQ_OPP
+    LSQ_LAPP -->|"Renewal bulk"| LSQ_CAPTURE
+    LSQ_QS -->|"Product-specific leads"| LSQ_CAPTURE
+
+    LSQ_WEBHOOK -->|"Payment complete,&lt;br/&gt;callback requests"| LSQ_MODULE
+    LSQ_GET -->|"Lead details"| LSQ_MODULE
+
+    style WEB_TRACK fill:#e3f2fd
+    style LSQ_CAPTURE fill:#fff3e0
+    style LSQ_WEBHOOK fill:#fce4ec
+  </pre>
+</div>
+
+<h4>Data Flow Summary</h4>
+
+<p><strong>Outbound (BimaKavach → LeadSquared):</strong></p>
+
+<table>
+  <thead>
+    <tr><th>Trigger</th><th>Data Sent</th><th>Custom Fields (mx_*)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Quote generated</td><td>Lead: name, email, phone, company</td><td>Product_Name, Lead_Intent, OTP_Verification_Status</td></tr>
+    <tr><td>Payment completed</td><td>Activity update with policy details</td><td>Policy number, premium, insurer</td></tr>
+    <tr><td>Product-specific L1 form</td><td>Lead with product attributes</td><td>Sum_Insured, City, Policy_Type + product-specific fields</td></tr>
+    <tr><td>Bulk CSV upload</td><td>Multiple leads/activities</td><td>Renewal requirements, dates</td></tr>
+    <tr><td>Cron jobs (daily)</td><td>Reminder activities</td><td>Stale lead notifications, policy reminders</td></tr>
+  </tbody>
+</table>
+
+<p><strong>Inbound (LeadSquared → BimaKavach):</strong></p>
+
+<table>
+  <thead>
+    <tr><th>Trigger</th><th>Data Received</th><th>Action Taken</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Payment webhook (<code>/lead-square/byId/:id</code>)</td><td>Lead prospect ID</td><td>Fetch lead → create policy → send confirmation email</td></tr>
+    <tr><td>Cross-sell webhook (<code>/lead-square/byOpportunityId/:id</code>)</td><td>Opportunity ID</td><td>Process cross-sell payment</td></tr>
+    <tr><td>Callback request</td><td>Phone + prospect ID</td><td>Queue callback for sales team</td></tr>
+    <tr><td>Renewal webhook (<code>/lead-square/renewal-management/*</code>)</td><td>Lead ID</td><td>Send payment link or process renewal</td></tr>
+  </tbody>
+</table>
+
+<h4>Database Tables</h4>
+
+<pre><code>LeadSquare                      → Internal lead record (productId, isConverted, leadCreated source)
+LeadSquareIdMapping             → Maps internal lead ID ↔ LSQ prospect ID
+L1FormLsqActivityIdMapping      → Maps L1 form submission ↔ LSQ activity ID + opportunity ID
+LsqCallbackRequests             → Stores phone + prospect_id for callback queue
+LsqBulkOperation                → Tracks bulk upload jobs (QUEUED → COMPLETE/FAILED)
+LsqBulkOperationResult          → Individual row results with payload + response + errors
+LsqEntitySubtype                → Schema definitions for bulk operation field types
+LsqFieldMaster                  → Field definitions per entity (key, name, dataType)</code></pre>
+
+<h4>Lead Sources (leadCreated enum)</h4>
+<p><code>Online</code> | <code>Offline</code> | <code>Bulk-Upload</code> | <code>Lead-Square</code> | <code>Recommendations</code> | <code>Partner-Lead</code></p>
+
+<hr>
+
+<!-- 2.7 Sibro Integration -->
+<h3 id="27-sibro-integration">2.7 Sibro Integration</h3>
+
+<p>Sibro is the insurance broker management platform used for policy record-keeping, regulatory compliance, and commission tracking. BimaKavach syncs master data FROM Sibro and pushes policy/transaction data TO Sibro.</p>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+graph TB
+    subgraph "Sibro Platform"
+        direction TB
+        S_INSURERS["Insurers &amp; Branches"]
+        S_PRODUCTS["Products / Policies"]
+        S_CRM["CRM Users"]
+        S_BOWNERS["Business Owners"]
+        S_CFIELDS["Policy Custom Fields"]
+        S_CLIENT["Client Management"]
+        S_POLICY["Policy Records"]
+        S_PREMIUM["Premium Transactions"]
+    end
+
+    subgraph "Question Service :3007 (sibro module)"
+        SYNC_SVC["Sync Service&lt;br/&gt;&lt;i&gt;Master data pull&lt;/i&gt;"]
+        CLIENT_SVC["Client Service&lt;br/&gt;&lt;i&gt;Search &amp; create clients&lt;/i&gt;"]
+        POLICY_SVC["Policy Service&lt;br/&gt;&lt;i&gt;Push policies on creation&lt;/i&gt;"]
+        MAPPING_SVC["Mapping Services&lt;br/&gt;&lt;i&gt;Insurer, Product, CRM User&lt;/i&gt;"]
+    end
+
+    subgraph "Internal Tables"
+        direction TB
+        T_INSURERS["sibro_insurers&lt;br/&gt;sibro_insurer_branches"]
+        T_PRODUCTS["sibro_products"]
+        T_CRM["sibro_crm_users"]
+        T_BOWNERS["sibro_business_owners"]
+        T_CFIELDS_T["sibro_policy_custom_fields&lt;br/&gt;sibro_policy_custom_field_options"]
+        T_MAPPING["sibro_insurer_mapping&lt;br/&gt;sibro_product_mapping&lt;br/&gt;sibro_crm_user_mapping"]
+        T_CLIENT["sibro_client_mapping"]
+        T_TX["sibro_client_transactions"]
+    end
+
+    %% Inbound sync (Sibro → BK)
+    S_INSURERS -->|"GET /insurers"| SYNC_SVC
+    S_PRODUCTS -->|"GET /policies?page=N"| SYNC_SVC
+    S_CRM -->|"GET /crm-users?page=N"| SYNC_SVC
+    S_BOWNERS -->|"GET /business-owners"| SYNC_SVC
+    S_CFIELDS -->|"GET /policy-custom-fields/{id}"| SYNC_SVC
+
+    SYNC_SVC --> T_INSURERS & T_PRODUCTS & T_CRM & T_BOWNERS & T_CFIELDS_T
+    MAPPING_SVC --> T_MAPPING
+
+    %% Outbound sync (BK → Sibro)
+    POLICY_SVC -->|"POST /add-policy"| S_POLICY
+    POLICY_SVC -->|"POST /add-premium-transaction/{id}"| S_PREMIUM
+    CLIENT_SVC -->|"POST /client (search)"| S_CLIENT
+    CLIENT_SVC -->|"POST /client (create)"| S_CLIENT
+    CLIENT_SVC --> T_CLIENT
+    POLICY_SVC --> T_TX
+
+    style S_INSURERS fill:#e8f5e9
+    style S_PRODUCTS fill:#e8f5e9
+    style S_CRM fill:#e8f5e9
+    style S_POLICY fill:#fff3e0
+    style S_PREMIUM fill:#fff3e0
+    style S_CLIENT fill:#fff3e0
+  </pre>
+</div>
+
+<h4>Sync Direction &amp; Triggers</h4>
+
+<p><strong>Inbound (Sibro → BimaKavach) -- Master Data Pull:</strong></p>
+
+<table>
+  <thead>
+    <tr><th>Data</th><th>Endpoint</th><th>Message Pattern</th><th>Trigger</th><th>Strategy</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Insurers + Branches</td><td><code>GET /insurers</code></td><td><code>sibro.sync.insurers</code></td><td>Manual / scheduled</td><td>Upsert + deactivate stale</td></tr>
+    <tr><td>Products</td><td><code>GET /policies?page=N</code></td><td><code>sibro.sync.products</code></td><td>Manual / scheduled</td><td>Paginated upsert</td></tr>
+    <tr><td>CRM Users</td><td><code>GET /crm-users?page=N</code></td><td><code>sibro.sync.crmUsers</code></td><td>Manual / scheduled</td><td>Paginated upsert</td></tr>
+    <tr><td>Business Owners</td><td><code>GET /business-owners</code></td><td><code>sibro.sync.businessOwners</code></td><td>Manual / scheduled</td><td>Upsert + deactivate</td></tr>
+    <tr><td>Custom Fields</td><td><code>GET /policy-custom-fields/{id}</code></td><td><code>sibro.sync.policyCustomFields</code></td><td>Manual / scheduled</td><td>Per-product sync</td></tr>
+  </tbody>
+</table>
+
+<p>All master syncs follow an <strong>upsert + deactivate</strong> pattern: mark all existing records inactive → upsert from API response → stale records remain inactive.</p>
+
+<p><strong>Outbound (BimaKavach → Sibro) -- On Policy Creation:</strong></p>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+flowchart TD
+    POLICY_CREATED["Policy Created in BimaKavach"]
+    CHECK_FLAG{"Feature flag&lt;br/&gt;SEND_POLICY_TO_SIBRO&lt;br/&gt;enabled?"}
+    FIND_CLIENT["Search Sibro Client&lt;br/&gt;&lt;i&gt;PAN → GST-PAN → Email → Phone&lt;/i&gt;"]
+    MATCH{"Match&lt;br/&gt;result?"}
+    EXACT["Exact Match (1 client)&lt;br/&gt;→ Auto-save mapping"]
+    MULTIPLE["Multiple Matches&lt;br/&gt;→ Require manual selection"]
+    NO_MATCH["No Match&lt;br/&gt;→ Create new client in Sibro"]
+    CREATE_POLICY["POST /add-policy&lt;br/&gt;&lt;i&gt;Client ID, business owner,&lt;br/&gt;CRM user, custom fields&lt;/i&gt;"]
+    CREATE_TX["POST /add-premium-transaction&lt;br/&gt;&lt;i&gt;Insurer, branch, amount,&lt;br/&gt;payment mode, date&lt;/i&gt;"]
+    SAVE_TX["Save to sibro_client_transactions"]
+    ERROR_EMAIL["Send error email to admin&lt;br/&gt;&lt;i&gt;with stage checkpoint&lt;/i&gt;"]
+
+    POLICY_CREATED --> CHECK_FLAG
+    CHECK_FLAG -->|Yes| FIND_CLIENT
+    CHECK_FLAG -->|No| SKIP["Skip Sibro sync"]
+    FIND_CLIENT --> MATCH
+    MATCH -->|"1 result"| EXACT
+    MATCH -->|"2+ results"| MULTIPLE
+    MATCH -->|"0 results"| NO_MATCH
+    EXACT --> CREATE_POLICY
+    NO_MATCH --> CREATE_POLICY
+    CREATE_POLICY --> CREATE_TX
+    CREATE_TX --> SAVE_TX
+    CREATE_POLICY -.->|"On failure"| ERROR_EMAIL
+    CREATE_TX -.->|"On failure"| ERROR_EMAIL
+
+    style POLICY_CREATED fill:#e3f2fd
+    style SAVE_TX fill:#c8e6c9
+    style ERROR_EMAIL fill:#ffcdd2
+  </pre>
+</div>
+
+<p><strong>Client Search Priority:</strong> PAN → PAN extracted from GST → Email → Phone</p>
+
+<h4>Mapping Tables</h4>
+
+<table>
+  <thead>
+    <tr><th>Table</th><th>Links</th><th>Purpose</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>sibro_insurer_mapping</code></td><td>Sibro insurer ↔ BK insurer</td><td>Route policies to correct Sibro insurer</td></tr>
+    <tr><td><code>sibro_product_mapping</code></td><td>Sibro product ↔ BK product</td><td>Map product catalog between systems</td></tr>
+    <tr><td><code>sibro_crm_user_mapping</code></td><td>Sibro CRM user ↔ BK internal user</td><td>Assign policies to correct CRM owner</td></tr>
+    <tr><td><code>sibro_client_mapping</code></td><td>BK user+company ↔ Sibro client ID</td><td>Avoid duplicate client creation</td></tr>
+    <tr><td><code>sibro_client_transactions</code></td><td>Sibro policy ID ↔ BK policy ID</td><td>Track which policies have been synced</td></tr>
+  </tbody>
+</table>
+
+<h4>Authentication</h4>
+<ul>
+  <li><strong>Method:</strong> Bearer token (<code>SIBRO_AUTH_TOKEN</code> env var)</li>
+  <li><strong>Base URL:</strong> <code>https://bimakavachbroking.sibro.xyz/api/v1/</code></li>
+  <li><strong>Override:</strong> Sync endpoints accept optional <code>auth_token</code> in payload</li>
+</ul>
+
+<h4>Error Handling</h4>
+<ul>
+  <li>Staged execution tracking (resolve_client → create_policy → create_premium_transaction → save_transaction)</li>
+  <li>Email alerts to admin on any failure with exact failure stage</li>
+  <li>CloudWatch logging for all operations</li>
+</ul>
+
+<hr>
+
+<!-- 2.8 Infrastructure & Deployment -->
+<h3 id="28-infrastructure-deployment">2.8 Infrastructure &amp; Deployment</h3>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+graph TB
+    subgraph "Docker Network: local"
+        subgraph "Frontend Containers"
+            D_WEB["BK Web&lt;br/&gt;:3000&lt;br/&gt;Node 18.17"]
+            D_ADMIN["bi-admin&lt;br/&gt;:3000&lt;br/&gt;Node 18.16"]
+            D_POS_ADMIN["POS Admin&lt;br/&gt;:3012&lt;br/&gt;Node 22"]
+        end
+        subgraph "Backend Containers"
+            D_GW["API Gateway&lt;br/&gt;:3005&lt;br/&gt;Node 18-slim"]
+            D_COMMON["Common&lt;br/&gt;:3006&lt;br/&gt;Node 18-slim"]
+            D_QUESTION["Question&lt;br/&gt;:3007&lt;br/&gt;Node 18-slim&lt;br/&gt;+ Chromium"]
+            D_EMAIL["Email&lt;br/&gt;:3008&lt;br/&gt;Node 18-slim&lt;br/&gt;+ Puppeteer"]
+            D_PROPOSAL["Proposal Form&lt;br/&gt;:3009&lt;br/&gt;Node 18-slim"]
+            D_POS_API["POS API&lt;br/&gt;:3011&lt;br/&gt;Node 22-slim"]
+        end
+    end
+
+    subgraph "AWS (ap-south-1)"
+        RDS_PG[(RDS PostgreSQL)]
+        S3_BUCK["S3 Buckets&lt;br/&gt;bimakavach-v2&lt;br/&gt;bimakavach-policies&lt;br/&gt;bk-pos-policies"]
+        CW_LOGS["CloudWatch Logs"]
+        CF_CDN["CloudFront CDN"]
+    end
+
+    D_GW & D_COMMON & D_QUESTION & D_EMAIL & D_PROPOSAL & D_POS_API --> RDS_PG
+    D_GW & D_QUESTION & D_EMAIL & D_PROPOSAL & D_POS_API --> S3_BUCK
+    D_GW --> CW_LOGS
+  </pre>
+</div>
+
+<p><strong>Tech Stack Summary:</strong></p>
+<ul>
+  <li><strong>Runtime:</strong> Node.js 18 (main platform), Node.js 22 (POS)</li>
+  <li><strong>Backend Framework:</strong> NestJS 10-11</li>
+  <li><strong>Frontend Frameworks:</strong> Next.js 13-16, React Native/Expo 54</li>
+  <li><strong>Database:</strong> PostgreSQL via TypeORM (synchronize mode)</li>
+  <li><strong>Transport:</strong> TCP (NestJS Microservices) between backend services</li>
+  <li><strong>Auth:</strong> JWT + HMAC-SHA256 signing + OTP (MSG91)</li>
+  <li><strong>Containerization:</strong> Docker + Docker Compose, shared <code>local</code> network</li>
+  <li><strong>Cloud:</strong> AWS (RDS, S3, CloudWatch, CloudFront), Google Cloud (Document AI, Storage)</li>
+  <li><strong>Region:</strong> ap-south-1 (Mumbai)</li>
+</ul>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="3-usability-architecture">3. Usability Architecture</h2>
+
+<!-- 3.1 User Roles & Access -->
+<h3 id="31-user-roles-access">3.1 User Roles &amp; Access</h3>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+graph TB
+    subgraph "BK Web Portal"
+        CLIENT["Client / Business Owner&lt;br/&gt;- Get quotes &amp; compare&lt;br/&gt;- Purchase policies&lt;br/&gt;- View dashboard&lt;br/&gt;- File claims&lt;br/&gt;- Fill proposal forms"]
+    end
+
+    subgraph "bi-admin Panel"
+        ADMIN_SUPER["Super Admin&lt;br/&gt;- Full system access&lt;br/&gt;- User management&lt;br/&gt;- Master data config"]
+        SALES["Sales Head / Team&lt;br/&gt;- Lead management&lt;br/&gt;- Client tracking&lt;br/&gt;- Quote oversight"]
+        CS["Customer Success&lt;br/&gt;- Policy support&lt;br/&gt;- Claims processing&lt;br/&gt;- Client communication"]
+        MARKETING["Marketing Team&lt;br/&gt;- Email campaigns&lt;br/&gt;- Newsletter management&lt;br/&gt;- Case studies"]
+    end
+
+    subgraph "POS Platform"
+        POS_AGENT["POS Agent&lt;br/&gt;- Quote generation&lt;br/&gt;- Policy creation&lt;br/&gt;- Claims filing&lt;br/&gt;- Client management"]
+        POS_HEAD["POS Head / Manager&lt;br/&gt;- Agent oversight&lt;br/&gt;- Campaign management&lt;br/&gt;- KPI tracking"]
+        POS_ADMIN_ROLE["POS Admin&lt;br/&gt;- Agent onboarding&lt;br/&gt;- KYC approval&lt;br/&gt;- Commission management"]
+    end
+
+    CLIENT -->|"HTTPS"| WEB_APP["BK Web V2.0"]
+    ADMIN_SUPER & SALES & CS & MARKETING -->|"HTTPS"| ADMIN_APP["bi-admin V2"]
+    POS_AGENT -->|"Mobile"| MOBILE_APP["POS Mobile App"]
+    POS_HEAD -->|"Browser"| REPORT_APP["POS Reporting"]
+    POS_ADMIN_ROLE -->|"Browser"| POS_ADMIN_APP["POS Admin Panel"]
+  </pre>
+</div>
+
+<!-- 3.2 Customer Journey -->
+<h3 id="32-customer-journey-bk-web">3.2 Customer Journey (BK Web)</h3>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+flowchart TD
+    START([Customer visits BK Web]) --> BROWSE["Browse insurance products&lt;br/&gt;&lt;i&gt;20+ product categories&lt;/i&gt;"]
+    BROWSE --> SELECT_PRODUCT["Select product&lt;br/&gt;&lt;i&gt;e.g. Fire, Marine, Cyber, WC&lt;/i&gt;"]
+    SELECT_PRODUCT --> L1_QUESTIONS["Fill L1 Questions&lt;br/&gt;&lt;i&gt;Basic risk info: turnover, industry, etc.&lt;/i&gt;"]
+    L1_QUESTIONS --> OTP["OTP Verification&lt;br/&gt;&lt;i&gt;Mobile/Email via MSG91&lt;/i&gt;"]
+    OTP --> GET_QUOTES["Get Quotes from Insurers&lt;br/&gt;&lt;i&gt;Compare premiums, coverage, features&lt;/i&gt;"]
+
+    GET_QUOTES --> COMPARE["Compare Quotes&lt;br/&gt;&lt;i&gt;Side-by-side comparison&lt;/i&gt;"]
+    COMPARE --> SELECT_INSURER["Select Insurer &amp; Plan"]
+
+    SELECT_INSURER --> L2_QUESTIONS["Fill L2 Questions&lt;br/&gt;&lt;i&gt;Detailed underwriting info&lt;/i&gt;"]
+    L2_QUESTIONS --> COMPANY_DETAILS["Provide Company Details&lt;br/&gt;&lt;i&gt;CIN, GST, PAN, documents&lt;/i&gt;"]
+    COMPANY_DETAILS --> PROPOSAL_FORM["Fill Proposal Form&lt;br/&gt;&lt;i&gt;Insurer-specific PDF form via Anvil&lt;/i&gt;"]
+    PROPOSAL_FORM --> PAYMENT["Make Payment&lt;br/&gt;&lt;i&gt;Future Generali / Chola / Magma&lt;/i&gt;"]
+    PAYMENT --> POLICY_ISSUED["Policy Issued"]
+
+    POLICY_ISSUED --> DASHBOARD["Customer Dashboard"]
+    DASHBOARD --> VIEW_POLICIES["View Policies"]
+    DASHBOARD --> FILE_CLAIM["File a Claim"]
+    DASHBOARD --> RENEW["Renew Policy"]
+    DASHBOARD --> DOCS["Download Documents"]
+
+    style START fill:#e1f5fe
+    style POLICY_ISSUED fill:#c8e6c9
+    style DASHBOARD fill:#fff3e0
+  </pre>
+</div>
+
+<p><strong>Key Touchpoints:</strong></p>
+
+<table>
+  <thead>
+    <tr><th>Step</th><th>Service Involved</th><th>Key Action</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Browse Products</td><td>Common Service</td><td>Fetch product groups, product list</td></tr>
+    <tr><td>L1 Questions</td><td>Question Service</td><td>Dynamic questionnaire per product</td></tr>
+    <tr><td>OTP Verification</td><td>API Gateway</td><td>MSG91 SMS/Email OTP</td></tr>
+    <tr><td>Get Quotes</td><td>Question Service</td><td>Calculate premiums per insurer</td></tr>
+    <tr><td>Compare Quotes</td><td>BK Web (client-side)</td><td>Side-by-side comparison UI</td></tr>
+    <tr><td>L2 Questions</td><td>Question Service</td><td>Insurer-specific detailed questions</td></tr>
+    <tr><td>Company Details</td><td>API Gateway</td><td>CIN verification via Probe API</td></tr>
+    <tr><td>Proposal Form</td><td>Proposal Form Service</td><td>Anvil PDF generation &amp; signing</td></tr>
+    <tr><td>Payment</td><td>API Gateway</td><td>Payment gateway integration</td></tr>
+    <tr><td>Policy Issued</td><td>Question Service</td><td>Policy record creation, email trigger</td></tr>
+    <tr><td>Dashboard</td><td>Multiple</td><td>Policy listing, claims, documents</td></tr>
+  </tbody>
+</table>
+
+<!-- 3.3 Admin Journey -->
+<h3 id="33-admin-journey-bi-admin">3.3 Admin Journey (bi-admin)</h3>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+flowchart TD
+    LOGIN([Admin Login&lt;br/&gt;&lt;i&gt;JWT + Role-based access&lt;/i&gt;])
+
+    LOGIN --> DASH["Dashboard&lt;br/&gt;&lt;i&gt;Policy stats, KPIs&lt;/i&gt;"]
+
+    DASH --> CLIENT_MGMT["Client Management"]
+    CLIENT_MGMT --> VIEW_CLIENTS["View Clients &amp; Policies"]
+    CLIENT_MGMT --> COMPANY_MGMT["Manage Company Details"]
+    CLIENT_MGMT --> FILE_CLAIM_ADMIN["File Claim on behalf"]
+
+    DASH --> LEAD_MGMT["Lead Management"]
+    LEAD_MGMT --> LEADS["Track Leads&lt;br/&gt;&lt;i&gt;LeadSquared sync&lt;/i&gt;"]
+    LEAD_MGMT --> NEWSLETTER["Newsletter Subscribers"]
+    LEAD_MGMT --> CASE_STUDY["Case Study Distribution"]
+
+    DASH --> PRODUCT_CONFIG["Product Configuration"]
+    PRODUCT_CONFIG --> PRODUCTS["Products &amp; Groups"]
+    PRODUCT_CONFIG --> INSURERS["Insurance Companies"]
+    PRODUCT_CONFIG --> PRICING_CFG["Pricing Setup"]
+    PRODUCT_CONFIG --> QUESTIONS_CFG["L1/L2 Questions"]
+    PRODUCT_CONFIG --> PROPOSAL_CFG["Proposal Forms"]
+
+    DASH --> COMMS["Communications"]
+    COMMS --> EMAIL_TEMPLATES["Email Templates &amp; Bodies"]
+    COMMS --> EMAIL_TRIGGERS["Email Triggers &amp; Scheduling"]
+    COMMS --> EMAIL_LOGS["Email History"]
+
+    DASH --> QCR_MGMT["QCR Management&lt;br/&gt;&lt;i&gt;Quick Clarification Requests&lt;/i&gt;"]
+
+    DASH --> MASTER_DATA["Master Data"]
+    MASTER_DATA --> INDUSTRIES["Industries"]
+    MASTER_DATA --> OCCUPANCIES["Fire/WC Occupancies"]
+    MASTER_DATA --> GEO["States, Cities, Pincodes"]
+    MASTER_DATA --> ROLES_RES["Roles &amp; Permissions"]
+
+    style LOGIN fill:#e1f5fe
+    style DASH fill:#fff3e0
+  </pre>
+</div>
+
+<!-- 3.4 POS Agent Journey -->
+<h3 id="34-pos-agent-journey">3.4 POS Agent Journey</h3>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+flowchart TD
+    AGENT_LOGIN([Agent Login via OTP&lt;br/&gt;&lt;i&gt;Mobile App&lt;/i&gt;])
+
+    AGENT_LOGIN --> HOME["Home Dashboard&lt;br/&gt;&lt;i&gt;KPIs, recent activity&lt;/i&gt;"]
+
+    HOME --> NEW_QUOTE["Generate Quote"]
+    NEW_QUOTE --> SELECT_CLIENT["Select/Create Client"]
+    SELECT_CLIENT --> SELECT_PROD["Select Product"]
+    SELECT_PROD --> FILL_L1["Fill L1 Questions"]
+    FILL_L1 --> RECEIVE_QUOTE["Receive Quote(s)"]
+    RECEIVE_QUOTE --> SHARE_QUOTE["Share with Client&lt;br/&gt;&lt;i&gt;WhatsApp / Email&lt;/i&gt;"]
+
+    HOME --> MANAGE_POLICIES["Manage Policies"]
+    MANAGE_POLICIES --> VIEW_POL["View Active Policies"]
+    MANAGE_POLICIES --> ENDORSEMENTS["Request Endorsements"]
+    MANAGE_POLICIES --> RENEWALS["Track Renewals"]
+
+    HOME --> CLAIMS_FLOW["Claims"]
+    CLAIMS_FLOW --> FILE_CLAIM_POS["File Claim"]
+    CLAIMS_FLOW --> TRACK_CLAIM["Track Claim Status"]
+
+    HOME --> CLIENTS_FLOW["Client Management"]
+    CLIENTS_FLOW --> ADD_CLIENT["Add New Client&lt;br/&gt;&lt;i&gt;Retail or Corporate&lt;/i&gt;"]
+    CLIENTS_FLOW --> CLIENT_KYC["Submit KYC Documents"]
+
+    HOME --> CAMPAIGNS["Campaigns&lt;br/&gt;&lt;i&gt;Sales targets &amp; milestones&lt;/i&gt;"]
+
+    HOME --> COMMISSIONS["View Commissions&lt;br/&gt;&lt;i&gt;Brokerage tracking&lt;/i&gt;"]
+
+    HOME --> NOTIF["Notifications&lt;br/&gt;&lt;i&gt;Push (Firebase) + WhatsApp&lt;/i&gt;"]
+
+    style AGENT_LOGIN fill:#e1f5fe
+    style HOME fill:#fff3e0
+    style SHARE_QUOTE fill:#c8e6c9
+  </pre>
+</div>
+
+<p><strong>POS Admin manages:</strong> Agent onboarding, KYC approval, campaign creation, commission grids, WhatsApp templates, claims review.</p>
+
+<p><strong>POS Reporting provides:</strong> Premium trends, regional performance, agent leaderboards, KPI summaries.</p>
+
+<!-- 3.5 Feature-to-Service Mapping -->
+<h3 id="35-feature-to-service-mapping">3.5 Feature-to-Service Mapping</h3>
+
+<div class="mermaid-wrapper">
+  <button class="expand-btn" onclick="openModal(this)">&#x26F6; Expand</button>
+  <pre class="mermaid">
+graph TB
+    subgraph "Features"
+        F_QUOTE["Quote&lt;br/&gt;Comparison"]
+        F_POLICY["Policy&lt;br/&gt;Management"]
+        F_CLAIMS["Claims&lt;br/&gt;Processing"]
+        F_PROPOSAL["Proposal&lt;br/&gt;Forms"]
+        F_EMAIL["Email&lt;br/&gt;Campaigns"]
+        F_PAYMENT["Payment&lt;br/&gt;Processing"]
+        F_CRM["CRM / Lead&lt;br/&gt;Management"]
+        F_MASTER["Master Data&lt;br/&gt;Config"]
+        F_OCR["Document&lt;br/&gt;OCR"]
+        F_POS_AGENT["POS Agent&lt;br/&gt;Operations"]
+        F_NOTIF["Push &amp; WhatsApp&lt;br/&gt;Notifications"]
+        F_ANALYTICS["Reporting &amp;&lt;br/&gt;Analytics"]
+    end
+
+    subgraph "Services"
+        S_GW["API Gateway"]
+        S_COMMON["Common"]
+        S_QUESTION["Question"]
+        S_EMAIL["Email"]
+        S_PROPOSAL["Proposal Form"]
+        S_POS["POS Backend"]
+    end
+
+    F_QUOTE --> S_QUESTION & S_COMMON
+    F_POLICY --> S_QUESTION & S_GW
+    F_CLAIMS --> S_QUESTION
+    F_PROPOSAL --> S_PROPOSAL & S_EMAIL
+    F_EMAIL --> S_EMAIL & S_GW
+    F_PAYMENT --> S_GW & S_QUESTION
+    F_CRM --> S_GW
+    F_MASTER --> S_COMMON
+    F_OCR --> S_QUESTION
+    F_POS_AGENT --> S_POS & S_COMMON & S_QUESTION
+    F_NOTIF --> S_POS
+    F_ANALYTICS --> S_POS
+  </pre>
+</div>
+
+<table>
+  <thead>
+    <tr><th>Feature</th><th>Primary Service</th><th>Supporting Services</th><th>External Dependencies</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Quote Generation</strong></td><td>Question :3007</td><td>Common :3006 (products, pricing)</td><td>Chola API</td></tr>
+    <tr><td><strong>Policy Management</strong></td><td>Question :3007</td><td>Gateway :3005, Email :3008</td><td>LeadSquared, Sibro</td></tr>
+    <tr><td><strong>Claims Processing</strong></td><td>Question :3007</td><td>Email :3008</td><td>--</td></tr>
+    <tr><td><strong>Proposal Forms</strong></td><td>Proposal :3009</td><td>Email :3008, Common :3006</td><td>Anvil.io (PDF)</td></tr>
+    <tr><td><strong>Email Campaigns</strong></td><td>Email :3008</td><td>Common :3006</td><td>SendGrid</td></tr>
+    <tr><td><strong>Payment</strong></td><td>Gateway :3005</td><td>Question :3007</td><td>Future Generali, Chola, Magma, Cashfree</td></tr>
+    <tr><td><strong>CRM/Leads</strong></td><td>Gateway :3005</td><td>--</td><td>LeadSquared</td></tr>
+    <tr><td><strong>Master Data</strong></td><td>Common :3006</td><td>--</td><td>--</td></tr>
+    <tr><td><strong>Document OCR</strong></td><td>Question :3007</td><td>--</td><td>Google Document AI, Tesseract</td></tr>
+    <tr><td><strong>Company Verification</strong></td><td>Gateway :3005</td><td>--</td><td>Probe API</td></tr>
+    <tr><td><strong>POS Operations</strong></td><td>POS :3011</td><td>Common :3006, Question :3007</td><td>Firebase, AiSensy, MSG91</td></tr>
+    <tr><td><strong>POS Analytics</strong></td><td>POS Reporting</td><td>--</td><td>Google Sheets</td></tr>
+  </tbody>
+</table>
+
+<hr>
+
+</main>
+
+<script>
+// Mermaid initialization
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'default',
+  flowchart: {
+    useMaxWidth: false,
+    htmlLabels: true,
+    wrappingWidth: 9999
+  },
+  er: {
+    useMaxWidth: false
+  },
+  securityLevel: 'loose'
+});
+
+// ---- Fullscreen Modal Logic ----
+let modalScale = 1;
+let modalTranslateX = 0;
+let modalTranslateY = 0;
+let isPanning = false;
+let panStartX = 0;
+let panStartY = 0;
+let panStartTX = 0;
+let panStartTY = 0;
+let hintTimer = null;
+
+const modal = document.getElementById('diagramModal');
+const viewport = document.getElementById('modalViewport');
+const content = document.getElementById('modalContent');
+const hint = document.getElementById('modalHint');
+
+function applyTransform() {
+  content.style.transform = `translate(${modalTranslateX}px, ${modalTranslateY}px) scale(${modalScale})`;
+}
+
+function openModal(btn) {
+  const wrapper = btn.closest('.mermaid-wrapper');
+  // Mermaid v11 may render SVG inside <pre>, or replace <pre> with <div>, or inline SVG directly
+  const svg = wrapper.querySelector('svg');
+  if (!svg) { console.error('No SVG found in wrapper'); return; }
+
+  content.innerHTML = '';
+  const clone = svg.cloneNode(true);
+  clone.style.overflow = 'visible';
+  clone.style.maxWidth = 'none';
+  clone.style.maxHeight = 'none';
+
+  // Preserve original viewBox dimensions for proper fit calculation
+  const vb = svg.getAttribute('viewBox');
+  if (vb) {
+    clone.setAttribute('viewBox', vb);
+  }
+  // Set width/height from viewBox or bounding box so fit works
+  const bbox = svg.getBBox ? svg.getBBox() : null;
+  const origW = bbox ? bbox.width + bbox.x : svg.clientWidth || 800;
+  const origH = bbox ? bbox.height + bbox.y : svg.clientHeight || 600;
+  clone.setAttribute('width', origW);
+  clone.setAttribute('height', origH);
+
+  content.appendChild(clone);
+
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  // Reset transform then fit
+  modalScale = 1;
+  modalTranslateX = 0;
+  modalTranslateY = 0;
+  applyTransform();
+
+  // Fit to screen after a frame so layout is computed
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => { modalFit(); });
+  });
+
+  // Show hint, fade after 3s
+  hint.classList.remove('faded');
+  clearTimeout(hintTimer);
+  hintTimer = setTimeout(() => { hint.classList.add('faded'); }, 3000);
+}
+
+function closeModal() {
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
+  content.innerHTML = '';
+  modalScale = 1;
+  modalTranslateX = 0;
+  modalTranslateY = 0;
+}
+
+function modalZoom(factor) {
+  const cx = viewport.clientWidth / 2;
+  const cy = viewport.clientHeight / 2;
+  zoomAtPoint(factor, cx, cy);
+}
+
+function zoomAtPoint(factor, cx, cy) {
+  const newScale = Math.max(0.05, Math.min(20, modalScale * factor));
+  const ratio = newScale / modalScale;
+  modalTranslateX = cx - ratio * (cx - modalTranslateX);
+  modalTranslateY = cy - ratio * (cy - modalTranslateY);
+  modalScale = newScale;
+  applyTransform();
+}
+
+function modalFit() {
+  const svg = content.querySelector('svg');
+  if (!svg) return;
+  const vw = viewport.clientWidth;
+  const vh = viewport.clientHeight;
+  // Use explicit attributes first, then clientWidth, then fallback
+  const svgW = parseFloat(svg.getAttribute('width')) || svg.clientWidth || 800;
+  const svgH = parseFloat(svg.getAttribute('height')) || svg.clientHeight || 600;
+  const padding = 80;
+  const scaleX = (vw - padding) / svgW;
+  const scaleY = (vh - padding) / svgH;
+  modalScale = Math.min(scaleX, scaleY, 3);
+  modalTranslateX = (vw - svgW * modalScale) / 2;
+  modalTranslateY = (vh - svgH * modalScale) / 2;
+  applyTransform();
+}
+
+function modalReset() {
+  modalScale = 1;
+  const svg = content.querySelector('svg');
+  if (svg) {
+    const vw = viewport.clientWidth;
+    const vh = viewport.clientHeight;
+    const svgW = parseFloat(svg.getAttribute('width')) || svg.clientWidth || 800;
+    const svgH = parseFloat(svg.getAttribute('height')) || svg.clientHeight || 600;
+    modalTranslateX = (vw - svgW) / 2;
+    modalTranslateY = (vh - svgH) / 2;
+  } else {
+    modalTranslateX = 0;
+    modalTranslateY = 0;
+  }
+  applyTransform();
+}
+
+// Mouse wheel zoom (toward cursor)
+viewport.addEventListener('wheel', (e) => {
+  if (!modal.classList.contains('active')) return;
+  e.preventDefault();
+  const rect = viewport.getBoundingClientRect();
+  const cx = e.clientX - rect.left;
+  const cy = e.clientY - rect.top;
+  const factor = e.deltaY < 0 ? 1.15 : 0.87;
+  zoomAtPoint(factor, cx, cy);
+}, { passive: false });
+
+// Pan: mousedown
+viewport.addEventListener('mousedown', (e) => {
+  if (!modal.classList.contains('active')) return;
+  isPanning = true;
+  panStartX = e.clientX;
+  panStartY = e.clientY;
+  panStartTX = modalTranslateX;
+  panStartTY = modalTranslateY;
+  viewport.style.cursor = 'grabbing';
+});
+
+// Pan: mousemove
+window.addEventListener('mousemove', (e) => {
+  if (!isPanning) return;
+  modalTranslateX = panStartTX + (e.clientX - panStartX);
+  modalTranslateY = panStartTY + (e.clientY - panStartY);
+  applyTransform();
+});
+
+// Pan: mouseup
+window.addEventListener('mouseup', () => {
+  if (!isPanning) return;
+  isPanning = false;
+  viewport.style.cursor = 'grab';
+});
+
+// Keyboard: +/- to zoom, 0 to fit, Esc to close
+document.addEventListener('keydown', (e) => {
+  if (!modal.classList.contains('active')) return;
+  if (e.key === 'Escape') { closeModal(); }
+  else if (e.key === '+' || e.key === '=') { modalZoom(1.2); }
+  else if (e.key === '-' || e.key === '_') { modalZoom(0.8); }
+  else if (e.key === '0') { modalFit(); }
+});
+
+// Sidebar active highlight on scroll
+(function() {
+  const links = document.querySelectorAll('nav.sidebar a');
+  const sections = [];
+  links.forEach(link => {
+    const id = link.getAttribute('href');
+    if (id && id.startsWith('#')) {
+      const el = document.getElementById(id.slice(1));
+      if (el) sections.push({ el, link });
+    }
+  });
+  window.addEventListener('scroll', () => {
+    let current = null;
+    for (const s of sections) {
+      if (s.el.getBoundingClientRect().top <= 120) current = s;
+    }
+    links.forEach(l => l.classList.remove('active'));
+    if (current) current.link.classList.add('active');
+  });
+})();
+</script>
+
+</body>
+</html>
